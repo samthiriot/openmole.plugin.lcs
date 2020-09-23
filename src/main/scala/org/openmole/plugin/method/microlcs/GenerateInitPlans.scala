@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 import org.openmole.tool.random.RandomProvider
 
@@ -78,7 +77,7 @@ object GenerateInitPlans extends JavaLogger {
     rulesAll:          Array[ClassifierRule],
     entitiesToProcess: List[Entity],
     proportions:       Seq[Double]
-  )(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): MacroGene = entitiesToProcess match {
+  )(implicit rng: RandomProvider, fileService: FileService): MacroGene = entitiesToProcess match {
 
     case Nil ⇒ // end of process
 
@@ -148,7 +147,7 @@ object GenerateInitPlans extends JavaLogger {
     rules:       Array[ClassifierRule],
     entities:    Array[Entity],
     proportions: Seq[Double]
-  )(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): MacroGene = elaboratePlan(
+  )(implicit rng: RandomProvider, fileService: FileService): MacroGene = elaboratePlan(
     id,
     Array(rule),
     rules,
@@ -161,7 +160,7 @@ object GenerateInitPlans extends JavaLogger {
     microMaximize: Seq[Val[Double]],
     proportions:   Seq[Double],
     maxrules:      Int
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("GenerateInitPlans") { (context, rng, _) ⇒
 
@@ -199,7 +198,7 @@ object GenerateInitPlans extends JavaLogger {
               sortByNthMicroPerf(i, rulesFiltered)
             ).zipWithIndex
               .map {
-                case (r, j) ⇒ elaboratePlanAroundARule(i * (countPerMicro + 1) + j, r, rulesFiltered.reverse, entities, proportions)(rng, newFile, fileService)
+                case (r, j) ⇒ elaboratePlanAroundARule(i * (countPerMicro + 1) + j, r, rulesFiltered.reverse, entities, proportions)(rng, fileService)
               }
           }.toArray
 

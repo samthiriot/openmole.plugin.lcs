@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 
 /**
@@ -34,7 +33,7 @@ object Evaluate extends JavaLogger {
   def apply(
     microMinimize: Seq[Val[Double]],
     microMaximize: Seq[Val[Double]]
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("Evaluate") { (context, rng, _) ⇒
 

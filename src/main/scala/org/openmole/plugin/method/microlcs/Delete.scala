@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 
 /**
@@ -32,7 +31,7 @@ object Delete extends JavaLogger {
 
   def apply(
     maxrules: Int
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("Evaluate") { (context, rng, _) ⇒
 
@@ -78,11 +77,11 @@ object Delete extends JavaLogger {
       // ... the rules we updates with the novel information
       outputs += varRules,
 
-      (inputs, outputs) += varIterations,
-      (inputs, outputs) += DecodeEntities.varEntities,
-      (inputs, outputs) += DecodeEntities.varMin,
-      (inputs, outputs) += DecodeEntities.varMax,
-      (inputs, outputs) += varSimulationCount
+      (inputs, outputs) += (varIterations),
+      (inputs, outputs) += (DecodeEntities.varEntities),
+      (inputs, outputs) += (DecodeEntities.varMin),
+      (inputs, outputs) += (DecodeEntities.varMax),
+      (inputs, outputs) += (varSimulationCount)
 
     )
 

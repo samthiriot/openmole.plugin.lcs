@@ -21,8 +21,8 @@ import org.openmole.core.context.{ Context, Val }
 import org.openmole.core.expansion.FromContext
 import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.domain.Bounds
-import org.openmole.core.workflow.sampling.Factor
-import org.openmole.core.workspace.NewFile
+import org.openmole.core.workflow.sampling._
+import org.openmole.core.workspace.TmpDirectory
 import org.openmole.tool.random.RandomProvider
 
 object MicroGenes {
@@ -31,27 +31,27 @@ object MicroGenes {
 
     val prototype: Val[T]
 
-    def makeRandomValue(context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): T
-    def makeRandomValue(refValue: T, context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): T
+    def makeRandomValue(context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): T
+    def makeRandomValue(refValue: T, context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): T
 
   }
 
   case class BooleanGene(val prototype: Val[Boolean]) extends Gene[Boolean] {
 
-    override def makeRandomValue(context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService) = rng().nextBoolean()
-    override def makeRandomValue(refValue: Boolean, context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService) = refValue
+    override def makeRandomValue(context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService) = rng().nextBoolean()
+    override def makeRandomValue(refValue: Boolean, context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService) = refValue
 
   }
 
   case class IntegerGene(val prototype: Val[Int], val min: FromContext[Int], val max: FromContext[Int]) extends Gene[Int] {
 
-    override def makeRandomValue(context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService) = {
+    override def makeRandomValue(context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService) = {
       val minV = min.from(context)
       val maxV = max.from(context)
       (minV + rng().nextInt(maxV - minV))
     }
 
-    override def makeRandomValue(refValue: Int, context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService) = {
+    override def makeRandomValue(refValue: Int, context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService) = {
       // TODO
       val minV = min.from(context)
       val maxV = max.from(context)
@@ -62,13 +62,13 @@ object MicroGenes {
 
   case class DoubleGene(val prototype: Val[Double], val min: FromContext[Double], val max: FromContext[Double]) extends Gene[Double] {
 
-    override def makeRandomValue(context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService) = {
+    override def makeRandomValue(context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService) = {
       val minV = min.from(context)
       val maxV = max.from(context)
       (minV + rng().nextDouble() * (maxV - minV))
     }
 
-    override def makeRandomValue(refValue: Double, context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService) = {
+    override def makeRandomValue(refValue: Double, context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService) = {
       // TODO
       val minV = min.from(context)
       val maxV = max.from(context)
@@ -83,10 +83,10 @@ object MicroGenes {
   */
 
   implicit def factorIsDoubleGene[D](f: Factor[D, Double])(implicit bounded: Bounds[D, Double]) =
-    DoubleGene(f.prototype, bounded.min(f.domain), bounded.max(f.domain))
+    DoubleGene(f.value, bounded.min(f.domain), bounded.max(f.domain))
 
   implicit def factorIsIntegerGene[D](f: Factor[D, Int])(implicit bounded: Bounds[D, Int]) =
-    IntegerGene(f.prototype, bounded.min(f.domain), bounded.max(f.domain))
+    IntegerGene(f.value, bounded.min(f.domain), bounded.max(f.domain))
 
   /* TODO sequences
   implicit def factorIsSequenceOfDouble[D](f: Factor[D, Array[Double]])(implicit bounded: Bounds[D, Array[Double]], sized: Sized[D]) =
@@ -97,7 +97,7 @@ object MicroGenes {
   */
 
   implicit def factorIsBooleanGene[D](f: Factor[D, Boolean]) =
-    BooleanGene(f.prototype)
+    BooleanGene(f.value)
 
   /*
   def doublesToGene(v:Val[Double], values: Array[Double]) =

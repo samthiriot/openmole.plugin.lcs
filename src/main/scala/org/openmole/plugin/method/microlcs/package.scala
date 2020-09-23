@@ -24,11 +24,10 @@ import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.execution.EnvironmentProvider
 import org.openmole.core.workflow.mole._
-import org.openmole.core.workflow.puzzle._
 import org.openmole.core.workflow.task._
-import org.openmole.core.workflow.transition.Slot
-import org.openmole.core.workspace.NewFile
+import org.openmole.core.workflow.transition.TransitionSlot
 import org.openmole.tool.random.RandomProvider
+import org.openmole.core.workspace.TmpDirectory
 
 package object microlcs {
 
@@ -92,15 +91,14 @@ package object microlcs {
     microCharacteristics: MicroCharacteristics, // Seq[Val[Array[T]] forSome { type T }],
     microActions:         Seq[MicroGenes.Gene[_]],
     iterations:           Int,
-    evaluation:           Puzzle,
-    environment:          EnvironmentProvider,
+    evaluation:           DSL,
     microMinimize:        Seq[Val[Double]],
     microMaximize:        Seq[Val[Double]],
     count:                Int                     = 200,
     similarity:           Int                     = 100
   //macroMinimize:        Seq[Val[Double]],
   //macroMaximize:        Seq[Val[Double]]
-  )(implicit newFile: NewFile, fileService: FileService): Puzzle = {
+  )(implicit definitionScope: DefinitionScope, tmpDirectory: TmpDirectory, fileService: FileService): DSL = {
 
     //
     // rng: RandomProvider,
@@ -109,26 +107,26 @@ package object microlcs {
 
     // the first step is to decode the initial lists of characteristics as lists of individuals.
     val decodeIndividuals = DecodeEntities(microCharacteristics, microActions)
-    val sDecodeIndividuals = Slot(decodeIndividuals)
+    //val sDecodeIndividuals = TransitionSlot(decodeIndividuals)
 
     val doMatching = Matching(microActions, false)
     val cDoMatching = Capsule(doMatching)
-    val sDoMatching = Slot(cDoMatching) on environment
+    //val sDoMatching = TransitionSlot(cDoMatching)
 
     val encodeIndividuals = EncodeEntities(microCharacteristics, microActions)
-    val sEncodeIndividuals = Slot(encodeIndividuals) on environment
+    //val sEncodeIndividuals = TransitionSlot(encodeIndividuals)
 
     val evaluate = Evaluate(microMinimize, microMaximize)
-    val sEvaluate = Slot(evaluate) on environment
+    //val sEvaluate = TransitionSlot(evaluate)
 
     val subsume = Subsumption(microMinimize, microMaximize, iterations, similarity)
 
     val evolve = Evolve(microActions, microCharacteristics, count)
-    val sEvolve = Slot(evolve)
+    //val sEvolve = TransitionSlot(evolve)
 
     val delete = Delete(count * 2)
     val cDelete = Capsule(delete)
-    val sDelete = Slot(cDelete)
+    //val sDelete = TransitionSlot(cDelete)
 
     //val sDoMatchingLoop = Slot(cDoMatching)
 
@@ -138,24 +136,38 @@ package object microlcs {
 
     val beginLoop = EmptyTask() set (
       name := "beginLoop",
-      (inputs, outputs) += (DecodeEntities.varEntities, varRules, varIterations, DecodeEntities.varMin, DecodeEntities.varMax)
+      inputs += (DecodeEntities.varEntities, varRules, varIterations, DecodeEntities.varMin, DecodeEntities.varMax)
+      //outputs += (DecodeEntities.varEntities, varRules, varIterations, DecodeEntities.varMin, DecodeEntities.varMax)
     )
 
-    val beginLoopCapsule = Capsule(beginLoop, strain = true)
-    val beginLoopExecInit = Slot(beginLoopCapsule)
-    val beginLoopExecLoop = Slot(beginLoopCapsule)
+    //val beginLoopCapsule = Strain(beginLoop)
+    //val beginLoopExecInit = TransitionSlot(beginLoopCapsule)
+    //val beginLoopExecLoop = TransitionSlot(beginLoopCapsule)
 
     val export = ExportRules(microCharacteristics, microActions, microMinimize, microMaximize)
-    val exportSlot = Slot(export)
+    //val exportSlot = TransitionSlot(export)
 
     val last = EmptyTask() set (
       name := "last" //,
     //(inputs, outputs) += (t.populationPrototype, t.statePrototype)
     )
-    val lastCapsule = Capsule(last, strain = true)
+    val lastCapsule = Strain(last)
 
     (
-      (sDecodeIndividuals -- beginLoopExecInit -- dispatch
+      (Slot(decodeIndividuals) -- Strain(beginLoop) -- dispatch
+        -< (Slot(doMatching) -- encodeIndividuals -- simulation -- Slot(evaluate)) >-
+        aggregate -- subsume -- Slot(evolve) -- Slot(delete)) &
+        // convey rules, iteration, micro entities and other information over the evaluation
+        (Slot(encodeIndividuals) -- Slot(evaluate)) &
+        // loop
+        (Slot(delete) -- Strain(beginLoop) when "microlcs$iterations < " + iterations) &
+        // last step: run exportation
+        (Slot(delete) -- Slot(export) when "microlcs$iterations == " + iterations)
+    ) -- Strain(lastCapsule) when "microlcs$iterations == " + iterations
+
+    /*
+    (
+      (decodeIndividuals -- beginLoopExecInit -- dispatch
         -< (sDoMatching -- sEncodeIndividuals -- simulation -- sEvaluate) >-
         aggregate -- subsume -- sEvolve -- sDelete) &
         // convey rules, iteration, micro entities and other information over the evaluation
@@ -165,6 +177,7 @@ package object microlcs {
         // last step: run exportation
         (sDelete -- (exportSlot when "microlcs$iterations == " + iterations))
     ) -- (lastCapsule when "microlcs$iterations == " + iterations)
+  */
 
   }
 
@@ -178,7 +191,7 @@ package object microlcs {
     microCharacteristics: MicroCharacteristics, // Seq[Val[Array[T]] forSome { type T }],
     microActions:         Seq[MicroGenes.Gene[_]],
     iterations:           Int,
-    evaluation:           Puzzle,
+    evaluation:           DSL,
     environment:          EnvironmentProvider,
     microMinimize:        Seq[Val[Double]],
     microMaximize:        Seq[Val[Double]],
@@ -186,37 +199,40 @@ package object microlcs {
     macroMaximize:        Seq[Val[Double]],
     proportions:          Seq[Double]             = Seq(0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
     count:                Int                     = 100
-  )(implicit newFile: NewFile, fileService: FileService): Puzzle = {
+  )(implicit definitionScope: DefinitionScope, tmpDirectory: TmpDirectory, fileService: FileService): DSL = {
 
     val generateInitPlans = GenerateInitPlans(microMinimize, microMaximize, proportions, count)
-    val generateInitPlansSlot = Slot(generateInitPlans)
+    //val generateInitPlansSlot = TransitionSlot(generateInitPlans)
 
     val dispatchPlans = ExplorationTask(SamplePlans())
 
-    val matchingPlans = Matching(microActions, true) set ((inputs, outputs) += (varPlanSimulated, varPlansBefore)) on environment
-    val encodeIndividualsPlans = EncodeEntities(microCharacteristics, microActions) set ((inputs, outputs) += (varPlanSimulated, varPlansBefore))
-    val sEncodeIndividualsPlans = Slot(encodeIndividualsPlans) on environment
+    val matchingPlans = Matching(microActions, true) set ( 
+      inputs += (varPlanSimulated, varPlansBefore),
+      outputs += (varPlanSimulated, varPlansBefore) 
+    )
+    val encodeIndividualsPlans = EncodeEntities(microCharacteristics, microActions) set ( (inputs, outputs) += (varPlanSimulated, varPlansBefore) )
+    //val sEncodeIndividualsPlans = TransitionSlot(encodeIndividualsPlans)
 
     val evaluatePlan = EvaluateMacro(microMinimize, microMaximize, macroMinimize, macroMaximize)
-    val sEvaluatePlan = Slot(evaluatePlan) on environment
+    //val sEvaluatePlan = TransitionSlot(evaluatePlan)
 
     val aggregatePlans = AggregateResultsPlan()
 
     val evolvePlans = EvolvePlans(count, microActions, proportions, iterations)
-    val sEvolvePlans = Slot(evolvePlans)
+    //val sEvolvePlans = TransitionSlot(evolvePlans)
 
-    val beginLoop = Capsule(EmptyTask() set (name := "begin loop"), strain = true)
-    val beginLoopInit = Slot(beginLoop)
-    val beginLoopRepeat = Slot(beginLoop)
+    val beginLoop = Strain(EmptyTask() set (name := "begin loop"))
+    //val beginLoopInit = TransitionSlot(beginLoop)
+    //val beginLoopRepeat = TransitionSlot(beginLoop)
 
     (
-      (generateInitPlansSlot -- beginLoopInit -- dispatchPlans
-        -< (matchingPlans -- sEncodeIndividualsPlans -- evaluation -- sEvaluatePlan) >-
-        aggregatePlans -- sEvolvePlans) &
+      (Slot(generateInitPlans) -- Slot(beginLoop) -- dispatchPlans
+        -< (matchingPlans -- Slot(encodeIndividualsPlans) -- evaluation -- Slot(evaluatePlan)) >-
+        aggregatePlans -- Slot(evolvePlans)) &
         // pass data over the simulation of macro plans
-        (sEncodeIndividualsPlans -- sEvaluatePlan) &
+        (Slot(encodeIndividualsPlans) -- Slot(evaluatePlan)) &
         // loop for the evolution of macro plans
-        (sEvolvePlans -- (beginLoopRepeat when "microlcs$iterations < " + iterations))
+        (Slot(evolvePlans) -- Slot(beginLoop) when "microlcs$iterations < " + iterations)
 
     ) // TODO !!! -- export
 

@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 
 import scala.annotation.tailrec
@@ -92,7 +91,7 @@ object Subsumption extends JavaLogger {
     microMaximize: Seq[Val[Double]],
     maxIteration:  Int,
     similarity:    Int              = 100
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("Subsumption") { (context, rng, _) ⇒
 

@@ -20,37 +20,31 @@ package org.openmole.plugin.method.microlcs
 
 import java.util.logging.{ Level, Logger }
 
-import org.openmole.core.pluginmanager._
-import org.openmole.core.preference.ConfigurationInfo
-import org.osgi.framework.BundleContext
+import org.openmole.core.pluginregistry.PluginRegistry
+import org.osgi.framework.{ BundleActivator, BundleContext }
 
-class Activator extends PluginInfoActivator {
-  override def stop(context: BundleContext): Unit = {
-    PluginInfo.unregister(this)
-    ConfigurationInfo.unregister(this)
-  }
+
+class Activator extends BundleActivator {
+  override def stop(context: BundleContext): Unit = PluginRegistry.unregister(this)
 
   override def start(context: BundleContext): Unit = {
-    import org.openmole.core.pluginmanager.KeyWord._
+    import org.openmole.core.highlight.HighLight._
 
     // force the level of communication
     // TODO remove this ?
     Logger.getLogger("org.openmole.plugin.method.microlcs").setLevel(Level.ALL)
     Logger.getLogger("org.openmole.tool.logger.JavaLogger").setLevel(Level.ALL)
 
-    val keyWords: Vector[KeyWord] =
-      Vector( // TODO
+    val highLight = Vector( // TODO
         // Sampling(objectName(MorrisSampling)),
         // Task(objectName(MorrisAggregation)),
         // Sampling(objectName(SaltelliSampling)),
-        Pattern("MicroLCS"),
-        Pattern("DiscoverPlansLCS")
+        // TODO mimic instead  https://github.com/openmole/openmole/blob/9150960a4b6c5dd323ef82e2c193fc53ad2bd92f/openmole/plugins/org.openmole.plugin.method.sensitivity/src/main/scala/org/openmole/plugin/method/sensitivity/Activator.scala
+        WordHighLight("MicroLCS"),
+        WordHighLight("DiscoverPlansLCS")
       )
 
-    PluginInfo.register(this, Vector(this.getClass.getPackage), keyWords = keyWords)
-    ConfigurationInfo.register(
-      this,
-      ConfigurationInfo.list()
-    )
+    PluginRegistry.register(this, Vector(this.getClass.getPackage), highLight = highLight)
+
   }
 }

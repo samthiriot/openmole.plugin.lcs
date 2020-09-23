@@ -19,7 +19,7 @@ package org.openmole.plugin.method.microlcs
 
 import org.openmole.core.context.{ Context, Variable }
 import org.openmole.core.fileservice.FileService
-import org.openmole.core.workspace.NewFile
+import org.openmole.core.workspace.TmpDirectory
 import org.openmole.tool.logger.JavaLogger
 import org.openmole.tool.random.RandomProvider
 
@@ -111,7 +111,7 @@ object ClassifierRule extends JavaLogger {
   def apply(
     e:        Entity,
     _actions: Seq[MicroGenes.Gene[_]],
-    context:  Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+    context:  Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): ClassifierRule = {
 
     ClassifierRule(
       ClassifierRule.lastId,
@@ -153,7 +153,7 @@ object ClassifierRule extends JavaLogger {
     )
   }
 
-  def mutateConditions(r: ClassifierRule, mins: Array[Double], maxs: Array[Double], context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def mutateConditions(r: ClassifierRule, mins: Array[Double], maxs: Array[Double], context: Context)(implicit rng: RandomProvider, fileService: FileService): ClassifierRule = {
     val rand = rng()
     val idxChange = rand.nextInt(r.conditions.length)
     // debug : System.out.println("mutating condition " + idxChange + " in " + r)
@@ -168,7 +168,7 @@ object ClassifierRule extends JavaLogger {
     res
   }
 
-  def mutateActions(r: ClassifierRule, microActions: Seq[MicroGenes.Gene[_]], mins: Array[Double], maxs: Array[Double], context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def mutateActions(r: ClassifierRule, microActions: Seq[MicroGenes.Gene[_]], mins: Array[Double], maxs: Array[Double], context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): ClassifierRule = {
     // change actions
     val rand = rng()
     val idxChange = rand.nextInt(r.actions.length)
@@ -190,7 +190,7 @@ object ClassifierRule extends JavaLogger {
    * The proportion is mutate step by step; for instance in potential proportions (0, 0.25, 0.5, 0.75, 1.0),
    * the mutation of 0.5 will give 0.25 or 0.75 . Returns a copy of the classifier.
    */
-  def mutateProportion(r: ClassifierRule, proportions: Seq[Double])(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def mutateProportion(r: ClassifierRule, proportions: Seq[Double])(implicit rng: RandomProvider, fileService: FileService): ClassifierRule = {
     if (proportions.isEmpty) {
       r
     }
@@ -232,7 +232,7 @@ object ClassifierRule extends JavaLogger {
   }
 
   /*
-  def mutateId(r: ClassifierRule, maxId: Int)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def mutateId(r: ClassifierRule, maxId: Int)(implicit rng: RandomProvider, fileService: FileService): ClassifierRule = {
     val novelConditionId = Condition.mutateId(r.conditionId, maxId, rng())
     // TODO risk of loosing a large amount of time generating rules which cannot be applied !
     r.copy(
@@ -247,7 +247,7 @@ object ClassifierRule extends JavaLogger {
    * Mutates a classifier by changing either its condition or action. The probability of mutating conditions
    * is (conditions.length / (conditions.length + actions.length)). Returns a copy of the original classifier.
    */
-  def mutateConditionOrAction(r: ClassifierRule, microActions: Seq[MicroGenes.Gene[_]], mins: Array[Double], maxs: Array[Double], maxId: Int, context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def mutateConditionOrAction(r: ClassifierRule, microActions: Seq[MicroGenes.Gene[_]], mins: Array[Double], maxs: Array[Double], maxId: Int, context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): ClassifierRule = {
 
     /* for condition on id :
     val randd = rng().nextDouble()
@@ -279,7 +279,7 @@ object ClassifierRule extends JavaLogger {
    * mutating conditions is (conditions.length / (conditions.length + 1)).
    * Returns a copy of the original classifier.
    */
-  def mutateConditionOrProportion(r: ClassifierRule, mins: Array[Double], maxs: Array[Double], maxId: Int, proportions: Seq[Double], context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def mutateConditionOrProportion(r: ClassifierRule, mins: Array[Double], maxs: Array[Double], maxId: Int, proportions: Seq[Double], context: Context)(implicit rng: RandomProvider, fileService: FileService): ClassifierRule = {
 
     val mutated = if (proportions.length > 0 && (rng().nextDouble() <= 1.0 / (1 + r.conditions.length))) {
       //mutateId(r, maxId)

@@ -19,7 +19,6 @@ package org.openmole.plugin.method.microlcs
 
 import org.openmole.core.context.Context
 import org.openmole.core.fileservice.FileService
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 import org.openmole.tool.random.RandomProvider
 
@@ -73,7 +72,7 @@ object MacroGene extends JavaLogger {
     maxId:        Int,
     proportions:  Seq[Double],
     context:      Context
-  )(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): MacroGene = {
+  )(implicit rng: RandomProvider, fileService: FileService): MacroGene = {
 
     // TODO mutate !
 

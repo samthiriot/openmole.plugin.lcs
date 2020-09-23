@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 
 /**
@@ -51,7 +50,7 @@ object DecodeEntities extends JavaLogger {
   def apply[T](
     _characteristics: MicroCharacteristics,
     _actions:         Seq[MicroGenes.Gene[_]]
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("DecodeIndividuals") { (context, rng, _) ⇒
 

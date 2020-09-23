@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 
 /**
@@ -30,7 +29,7 @@ import org.openmole.tool.logger.JavaLogger
  */
 object AggregateResults extends JavaLogger {
 
-  def apply()(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  def apply()(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("AggregateResults") { (context, rng, _) ⇒
 
@@ -66,19 +65,8 @@ object AggregateResults extends JavaLogger {
 
     } set (
 
-      inputs += varIterations.toArray,
-      inputs += varRules.toArray,
-      inputs += DecodeEntities.varEntities.toArray,
-      inputs += DecodeEntities.varMin.toArray,
-      inputs += DecodeEntities.varMax.toArray,
-      inputs += varSimulationCount.toArray,
-
-      outputs += varIterations,
-      outputs += varRules,
-      outputs += DecodeEntities.varEntities,
-      outputs += DecodeEntities.varMin,
-      outputs += DecodeEntities.varMax,
-      outputs += varSimulationCount
+      inputs += (varIterations.toArray, varRules.toArray, DecodeEntities.varEntities.toArray, DecodeEntities.varMin.toArray, DecodeEntities.varMax.toArray, varSimulationCount.toArray),
+      outputs += (varIterations, varRules, DecodeEntities.varEntities, DecodeEntities.varMin, DecodeEntities.varMax, varSimulationCount)
     )
 
   }

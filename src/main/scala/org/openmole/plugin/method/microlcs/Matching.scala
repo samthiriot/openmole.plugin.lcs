@@ -22,19 +22,19 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 import org.openmole.tool.random.RandomProvider
+import org.openmole.core.workspace.TmpDirectory
 
 import scala.annotation.tailrec
 
 object Matching extends JavaLogger {
 
-  def covering(entity: Entity, _actions: Seq[MicroGenes.Gene[_]], context: Context)(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule = {
+  def covering(entity: Entity, _actions: Seq[MicroGenes.Gene[_]], context: Context)(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): ClassifierRule = {
     ClassifierRule(entity, _actions, context)
   }
 
-  def applyOneRuleDeterministic(matching: List[ClassifierRule])(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): ClassifierRule =
+  def applyOneRuleDeterministic(matching: List[ClassifierRule])(implicit rng: RandomProvider, fileService: FileService): ClassifierRule =
     if (matching.length == 1) {
       matching(0)
     }
@@ -56,7 +56,7 @@ object Matching extends JavaLogger {
     deterministic:    Boolean,
     entitiesCovered:  List[Entity],
     rulesForEntities: List[ClassifierRule]
-  )(implicit rng: RandomProvider, newFile: NewFile, fileService: FileService): Array[ClassifierRule] = entitiesToCover match {
+  )(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): Array[ClassifierRule] = entitiesToCover match {
     case Nil ⇒ rulesForEntities.toArray
     case e :: tail ⇒
       val matching: Array[ClassifierRule] = rulesAvailable.filter(r ⇒ r.matches(e))
@@ -104,7 +104,7 @@ object Matching extends JavaLogger {
   def apply(
     _actions:      Seq[MicroGenes.Gene[_]],
     deterministic: Boolean
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, tmpDirectory:TmpDirectory, fileService: FileService) = {
 
     ClosureTask("Matching") { (context, rng, _) ⇒
 
@@ -126,9 +126,9 @@ object Matching extends JavaLogger {
 
       // create the set of actions to be used
       val rulesActionSet: Array[ClassifierRule] =
-        matchOrCoverEntities(rulesShuffled, entities.toList, _actions, context, deterministic, List(), List())(rng, newFile, fileService)
+        matchOrCoverEntities(rulesShuffled, entities.toList, _actions, context, deterministic, List(), List())(rng, tmpDirectory, fileService)
 
-          //entities.map { e ⇒ matchOrCoverIndividual(rulesShuffled, e, _actions, context, deterministic)(rng, newFile, fileService) }
+          //entities.map { e ⇒ matchOrCoverIndividual(rulesShuffled, e, _actions, context, deterministic)(rng, fileService) }
           .toArray
       //System.out.println("Here are the rules: " + ClassifierRule.toPrettyString(rulesActionSet.toList))
 

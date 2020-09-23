@@ -22,9 +22,9 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 import org.openmole.tool.random.RandomProvider
+import org.openmole.core.workspace.TmpDirectory
 
 /**
  * Takes a set of rules, and evolves them
@@ -68,7 +68,7 @@ object Evolve extends JavaLogger {
     microActions:         Seq[MicroGenes.Gene[_]],
     microCharacteristics: MicroCharacteristics,
     rulesCount:           Int
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, tmpDirectory:TmpDirectory, fileService: FileService) = {
 
     ClosureTask("Evolve") { (context, rng, _) ⇒
 
@@ -90,8 +90,8 @@ object Evolve extends JavaLogger {
           .map { case (a: ClassifierRule, b: ClassifierRule) ⇒ ClassifierRule.crossoverSinglePoint(a, b)(rng) }
           .flatMap {
             case (c: ClassifierRule, d: ClassifierRule) ⇒ List(
-              ClassifierRule.mutateConditionOrAction(c, microActions, mins, maxs, countEntities, context)(rng, newFile, fileService),
-              ClassifierRule.mutateConditionOrAction(d, microActions, mins, maxs, countEntities, context)(rng, newFile, fileService))
+              ClassifierRule.mutateConditionOrAction(c, microActions, mins, maxs, countEntities, context)(rng, tmpDirectory, fileService),
+              ClassifierRule.mutateConditionOrAction(d, microActions, mins, maxs, countEntities, context)(rng, tmpDirectory, fileService))
           }
           .toArray
 

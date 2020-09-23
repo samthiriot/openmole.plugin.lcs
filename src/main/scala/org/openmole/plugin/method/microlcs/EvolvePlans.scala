@@ -22,7 +22,6 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
-import org.openmole.core.workspace.NewFile
 import org.openmole.tool.logger.JavaLogger
 
 import scala.annotation.tailrec
@@ -66,7 +65,7 @@ object EvolvePlans extends JavaLogger {
     microActions: Seq[MicroGenes.Gene[_]],
     proportions:  Seq[Double],
     maxIteration: Int
-  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, newFile: NewFile, fileService: FileService) = {
+  )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("EvolvePlans") { (context, rng, _) ⇒
 
@@ -132,7 +131,7 @@ object EvolvePlans extends JavaLogger {
             countEntities,
             proportions,
             context
-          )(rng, newFile, fileService)
+          )(rng, fileService)
           else
             p
       ).toArray
@@ -148,7 +147,7 @@ object EvolvePlans extends JavaLogger {
             countEntities,
             proportions,
             context
-          )(rng, newFile, fileService)
+          )(rng, fileService)
           else
             p
       ).toArray

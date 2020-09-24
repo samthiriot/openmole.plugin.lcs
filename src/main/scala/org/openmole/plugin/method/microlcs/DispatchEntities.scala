@@ -29,46 +29,62 @@ import org.openmole.tool.logger.JavaLogger
 object DispatchEntities extends JavaLogger {
 
   def apply(
-    parallelEval: Int
+    parallelEval: FromContext[Int]
   ) = new DispatchEntities(parallelEval)
 
 }
 
 sealed class DispatchEntities(
-  val parallelEval: Int
+  val parallelEval: FromContext[Int]
 ) extends Sampling with JavaLogger {
 
   override def inputs = List(
     varIterations,
     DecodeEntities.varEntities,
     varRules,
-    DecodeEntities.varMin,
-    DecodeEntities.varMax,
+    varMin,
+    varMax,
     varSimulationCount
   )
-  override def prototypes = inputs
+  override def prototypes = inputs //.map(_.toArray)
 
   override def apply(): FromContext[Iterator[Iterable[Variable[_]]]] = FromContext { ctxt ⇒
     import ctxt._
 
     // collect inputs
+    
+    val rules: Array[ClassifierRule] = context(varRules)
     val iteration: Int = context(varIterations)
     val entities: Array[Entity] = context(DecodeEntities.varEntities)
-    val rules: Array[ClassifierRule] = context(varRules)
-    val mins: Array[Double] = context(DecodeEntities.varMin)
-    val maxs: Array[Double] = context(DecodeEntities.varMax)
+    val mins: Array[Double] = context(varMin)
+    val maxs: Array[Double] = context(varMax)
     val simulationsCount: Int = context(varSimulationCount)
+    
+    val parallelCount: Int = parallelEval.from(context)
 
-    Log.log(Log.INFO, "dispatching " + rules.length + " for " + parallelEval + " parallel simulation")
+    //Log.log(Log.INFO, "dispatching ! Context: " + context)
+
+    /*
+    Log.log(Log.INFO, "dispatching " + rules.length + " rules for " + parallelCount + " parallel simulation")
+    Log.log(Log.INFO, "entities: "+entities)
+    Log.log(Log.INFO, "mins: "+mins)
+    Log.log(Log.INFO, "maxs: "+maxs)
+
+    Log.log(Log.INFO, "rules from context: "+context(varRules))
+    //Log.log(Log.INFO, "rules from ctxt: "+ctxt(varRules))
+    Log.log(Log.INFO, "rules from ctxt: "+varRules.from(ctxt.context))
+  */
+
     //System.out.println("dispatching " + rules.length + " rules: " + rules.map(r ⇒ r.name).mkString(","))
 
-    List(
-      (0 to parallelEval).map(_ ⇒ Variable(varIterations, iteration)),
-      (0 to parallelEval).map(_ ⇒ Variable(DecodeEntities.varEntities, entities)),
-      (0 to parallelEval).map(_ ⇒ Variable(varRules, rules)),
-      (0 to parallelEval).map(_ ⇒ Variable(DecodeEntities.varMin, mins)),
-      (0 to parallelEval).map(_ ⇒ Variable(DecodeEntities.varMax, maxs)),
-      (0 to parallelEval).map(_ ⇒ Variable(varSimulationCount, simulationsCount))
+    (0 to parallelCount).map(_ ⇒ List( 
+          Variable(varIterations, iteration),
+          Variable(DecodeEntities.varEntities, entities),
+          Variable(varRules, rules),
+          Variable(varMin, mins),
+          Variable(varMax, maxs),
+          Variable(varSimulationCount, simulationsCount)
+        )
     ).toIterator
   }
 

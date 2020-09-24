@@ -34,9 +34,6 @@ object DecodeEntities extends JavaLogger {
   // the value which will contain the list of the entities in the model
   val varEntities = Val[Array[Entity]]("entities", namespace = namespaceMicroLCS)
 
-  val varMin = Val[Array[Double]]("characteristic_min", namespace = namespaceMicroLCS)
-  val varMax = Val[Array[Double]]("characteristic_max", namespace = namespaceMicroLCS)
-
   def toIndividuals(context: Context, characteristics: Seq[Val[Array[_]]], actions: Seq[Val[_]], acc: Seq[Entity]) = {
 
     val truc: Val[_] = null

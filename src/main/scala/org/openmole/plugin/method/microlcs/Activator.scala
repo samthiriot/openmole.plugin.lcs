@@ -40,8 +40,12 @@ class Activator extends BundleActivator {
         // Task(objectName(MorrisAggregation)),
         // Sampling(objectName(SaltelliSampling)),
         // TODO mimic instead  https://github.com/openmole/openmole/blob/9150960a4b6c5dd323ef82e2c193fc53ad2bd92f/openmole/plugins/org.openmole.plugin.method.sensitivity/src/main/scala/org/openmole/plugin/method/sensitivity/Activator.scala
+        //TaskHighLight(objectName(MicroLCS)),
+        //TaskHighLight(objectName(DiscoverPlansLCS)),
         WordHighLight("MicroLCS"),
-        WordHighLight("DiscoverPlansLCS")
+        WordHighLight("DiscoverPlansLCS"),
+        WordHighLight("MicroCharacteristic")
+        //WordHighLight("DiscoverPlansLCS")
       )
 
     PluginRegistry.register(this, Vector(this.getClass.getPackage), highLight = highLight)

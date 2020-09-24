@@ -82,8 +82,8 @@ object Evolve extends JavaLogger {
 
       Log.log(Log.FINE, "Iteration " + iteration + ": starting evolution of the " + rules.length + " rules...")
 
-      val mins: Array[Double] = context(DecodeEntities.varMin)
-      val maxs: Array[Double] = context(DecodeEntities.varMax)
+      val mins: Array[Double] = context(varMin)
+      val maxs: Array[Double] = context(varMax)
 
       val rulesUpdated =
         (0 to ((rulesCount * 2) - rules.length) / 2 - 1).map(_ ⇒ tournamentSelectionWithN(4, rules)(rng))
@@ -112,8 +112,8 @@ object Evolve extends JavaLogger {
 
       (inputs, outputs) += varIterations,
       (inputs, outputs) += DecodeEntities.varEntities,
-      (inputs, outputs) += DecodeEntities.varMin,
-      (inputs, outputs) += DecodeEntities.varMax,
+      (inputs, outputs) += varMin,
+      (inputs, outputs) += varMax,
       (inputs, outputs) += varSimulationCount
 
     )

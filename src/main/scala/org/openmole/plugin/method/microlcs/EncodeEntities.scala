@@ -97,8 +97,8 @@ object EncodeEntities {
       outputs ++= _characteristics.map(_.prototype),
       outputs ++= _actions.map(g ⇒ g.prototype.toArray).toSeq,
 
-      (inputs, outputs) += DecodeEntities.varMin,
-      (inputs, outputs) += DecodeEntities.varMax,
+      (inputs, outputs) += varMin,
+      (inputs, outputs) += varMax,
       (inputs, outputs) += varSimulationCount
 
     //outputs += varRules,

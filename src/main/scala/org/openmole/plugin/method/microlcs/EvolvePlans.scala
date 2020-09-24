@@ -113,8 +113,8 @@ object EvolvePlans extends JavaLogger {
       // we can do crossover between rules which are of similar size
       // TODO crossover
 
-      val mins: Array[Double] = context(DecodeEntities.varMin)
-      val maxs: Array[Double] = context(DecodeEntities.varMax)
+      val mins: Array[Double] = context(varMin)
+      val maxs: Array[Double] = context(varMax)
 
       // TODO try again some of the best which were not tested that much
       val goodPlansToTestAgain: Array[MacroGene] = parentsRankedPareto(0).filter(_.applications <= 5).toArray
@@ -167,8 +167,8 @@ object EvolvePlans extends JavaLogger {
 
       (inputs, outputs) += varIterations,
       (inputs, outputs) += DecodeEntities.varEntities,
-      (inputs, outputs) += DecodeEntities.varMin,
-      (inputs, outputs) += DecodeEntities.varMax,
+      (inputs, outputs) += varMin,
+      (inputs, outputs) += varMax,
       (inputs, outputs) += varSimulationCount
 
     )

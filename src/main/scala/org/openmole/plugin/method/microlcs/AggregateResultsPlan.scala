@@ -45,8 +45,8 @@ object AggregateResultsPlan extends JavaLogger {
       // ... the rules
       val rules: Array[Array[ClassifierRule]] = context(varRules.toArray)
       val entities: Array[Array[Entity]] = context(DecodeEntities.varEntities.toArray)
-      val mins: Array[Array[Double]] = context(DecodeEntities.varMin.toArray)
-      val maxs: Array[Array[Double]] = context(DecodeEntities.varMax.toArray)
+      val mins: Array[Array[Double]] = context(varMin.toArray)
+      val maxs: Array[Array[Double]] = context(varMax.toArray)
 
       val minsFlatten: Array[Double] = mins.transpose.map(vv ⇒ vv.min)
       val maxsFlatten: Array[Double] = maxs.transpose.map(vv ⇒ vv.max)
@@ -62,8 +62,8 @@ object AggregateResultsPlan extends JavaLogger {
         Variable(varIterations, iteration),
         Variable(varRules, rules.flatten),
         Variable(DecodeEntities.varEntities, entities(0)),
-        Variable(DecodeEntities.varMin, minsFlatten),
-        Variable(DecodeEntities.varMax, maxsFlatten),
+        Variable(varMin, minsFlatten),
+        Variable(varMax, maxsFlatten),
         Variable(varPlans, plansSimulated),
         Variable(varPlansBefore, plansBefore(0)),
         Variable(varSimulationCount, simulationCount)
@@ -74,8 +74,8 @@ object AggregateResultsPlan extends JavaLogger {
       inputs += varIterations.toArray,
       inputs += varRules.toArray,
       inputs += DecodeEntities.varEntities.toArray,
-      inputs += DecodeEntities.varMin.toArray,
-      inputs += DecodeEntities.varMax.toArray,
+      inputs += varMin.toArray,
+      inputs += varMax.toArray,
       inputs += varPlanSimulated.toArray,
       inputs += varPlansBefore.toArray,
       inputs += varSimulationCount.toArray,
@@ -83,8 +83,8 @@ object AggregateResultsPlan extends JavaLogger {
       outputs += varIterations,
       outputs += varRules,
       outputs += DecodeEntities.varEntities,
-      outputs += DecodeEntities.varMin,
-      outputs += DecodeEntities.varMax,
+      outputs += varMin,
+      outputs += varMax,
       outputs += varPlans,
       outputs += varPlansBefore,
       outputs += varSimulationCount

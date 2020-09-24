@@ -41,7 +41,7 @@ sealed class SamplePlans() extends Sampling with JavaLogger {
     DecodeEntities.varEntities,
     varPlans,
     varRules,
-    DecodeEntities.varMin, DecodeEntities.varMax,
+    varMin, varMax,
     varPlansBefore,
     varSimulationCount
   )
@@ -51,7 +51,7 @@ sealed class SamplePlans() extends Sampling with JavaLogger {
     DecodeEntities.varEntities,
     varRules,
     varPlanSimulated,
-    DecodeEntities.varMin, DecodeEntities.varMax,
+    varMin, varMax,
     varPlansBefore,
     varSimulationCount
   )
@@ -66,8 +66,8 @@ sealed class SamplePlans() extends Sampling with JavaLogger {
     val plans: Array[MacroGene] = context(varPlans)
 
     // TODO a virer ?
-    val mins: Array[Double] = context(DecodeEntities.varMin)
-    val maxs: Array[Double] = context(DecodeEntities.varMax)
+    val mins: Array[Double] = context(varMin)
+    val maxs: Array[Double] = context(varMax)
 
     val allRules: Array[ClassifierRule] = context(varRules)
 
@@ -86,8 +86,8 @@ sealed class SamplePlans() extends Sampling with JavaLogger {
       plans.map(p ⇒ Variable(varRules, p.rules)).toList,
       plans.map(p ⇒ Variable(varPlanSimulated, p)).toList,
       // TODO virer ?
-      plans.map(_ ⇒ Variable(DecodeEntities.varMin, mins)).toList,
-      plans.map(_ ⇒ Variable(DecodeEntities.varMax, maxs)).toList,
+      plans.map(_ ⇒ Variable(varMin, mins)).toList,
+      plans.map(_ ⇒ Variable(varMax, maxs)).toList,
       plans.map(_ ⇒ Variable(varPlansBefore, previousPlans)).toList,
       plans.map(_ ⇒ Variable(varSimulationCount, iterationsCount)).toList
     ).toIterator

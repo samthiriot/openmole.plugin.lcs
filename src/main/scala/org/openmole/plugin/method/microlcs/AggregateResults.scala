@@ -45,8 +45,8 @@ object AggregateResults extends JavaLogger {
       // ... the rules
       val rules: Array[Array[ClassifierRule]] = context(varRules.toArray)
       val entities: Array[Array[Entity]] = context(DecodeEntities.varEntities.toArray)
-      val mins: Array[Array[Double]] = context(DecodeEntities.varMin.toArray)
-      val maxs: Array[Array[Double]] = context(DecodeEntities.varMax.toArray)
+      val mins: Array[Array[Double]] = context(varMin.toArray)
+      val maxs: Array[Array[Double]] = context(varMax.toArray)
 
       val minsFlatten: Array[Double] = mins.transpose.map(vv ⇒ vv.min)
       val maxsFlatten: Array[Double] = maxs.transpose.map(vv ⇒ vv.max)
@@ -58,15 +58,15 @@ object AggregateResults extends JavaLogger {
         Variable(varIterations, iteration),
         Variable(varRules, rules.flatten),
         Variable(DecodeEntities.varEntities, entities(0)),
-        Variable(DecodeEntities.varMin, minsFlatten),
-        Variable(DecodeEntities.varMax, maxsFlatten),
+        Variable(varMin, minsFlatten),
+        Variable(varMax, maxsFlatten),
         Variable(varSimulationCount, simulationsCount)
       )
 
     } set (
 
-      inputs += (varIterations.toArray, varRules.toArray, DecodeEntities.varEntities.toArray, DecodeEntities.varMin.toArray, DecodeEntities.varMax.toArray, varSimulationCount.toArray),
-      outputs += (varIterations, varRules, DecodeEntities.varEntities, DecodeEntities.varMin, DecodeEntities.varMax, varSimulationCount)
+      inputs += (varIterations.toArray, varRules.toArray, DecodeEntities.varEntities.toArray, varMin.toArray, varMax.toArray, varSimulationCount.toArray),
+      outputs += (varIterations, varRules, DecodeEntities.varEntities, varMin, varMax, varSimulationCount)
     )
 
   }

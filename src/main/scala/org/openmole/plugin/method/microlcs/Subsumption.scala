@@ -100,8 +100,8 @@ object Subsumption extends JavaLogger {
       val rules: Array[ClassifierRule] = context(varRules)
 
       //System.out.println("Applying subsumption on " + rules.length + " rules " + rules.map(_.name).mkString(","))
-      val mins = context(DecodeEntities.varMin)
-      val maxs = context(DecodeEntities.varMax)
+      val mins = context(varMin)
+      val maxs = context(varMax)
       val iteration = context(varIterations)
 
       Log.log(Log.INFO, "simplifying rules based on mins and maxs: " + mins.mkString(",") + " " + maxs.mkString(","))
@@ -156,8 +156,8 @@ object Subsumption extends JavaLogger {
 
       (inputs, outputs) += varIterations,
       (inputs, outputs) += DecodeEntities.varEntities,
-      (inputs, outputs) += DecodeEntities.varMin,
-      (inputs, outputs) += DecodeEntities.varMax,
+      (inputs, outputs) += varMin,
+      (inputs, outputs) += varMax,
       (inputs, outputs) += varSimulationCount
     )
 

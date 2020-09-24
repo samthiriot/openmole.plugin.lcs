@@ -101,6 +101,7 @@ object Matching extends JavaLogger {
       )
 
   }
+
   def apply(
     _actions:      Seq[MicroGenes.Gene[_]],
     deterministic: Boolean
@@ -108,17 +109,30 @@ object Matching extends JavaLogger {
 
     ClosureTask("Matching") { (context, rng, _) ⇒
 
+
+      Log.log(Log.INFO, "matching ! Context: " + context)
+
       val iteration: Int = context(varIterations)
       val entities: Array[Entity] = context(DecodeEntities.varEntities)
       val rules: Array[ClassifierRule] = context(varRules)
+
+      Log.log(Log.INFO, "Matching: Iteration " + iteration +
+          " entities " + entities + 
+          " rules " + rules)
+
+      // debug:
+      
+      Log.log(Log.INFO, "Iteration " + iteration +
+          " matching on " + entities.length + " entities " +
+          "based on " + rules.length + " rules ")
 
       val rulesShuffled: Array[ClassifierRule] = deterministic match {
         case true  ⇒ rules
         case false ⇒ rng().shuffle(rules.toList).toArray
       }
 
-      // debug:
-      /*System.out.println(
+      /*
+      System.out.println(
         "Iteration " + iteration +
           " matching on " + entities.length + " entities " +
           "based on " + rules.length + " rules: " + rulesShuffled.map(_.name).mkString(","))
@@ -127,7 +141,6 @@ object Matching extends JavaLogger {
       // create the set of actions to be used
       val rulesActionSet: Array[ClassifierRule] =
         matchOrCoverEntities(rulesShuffled, entities.toList, _actions, context, deterministic, List(), List())(rng, tmpDirectory, fileService)
-
           //entities.map { e ⇒ matchOrCoverIndividual(rulesShuffled, e, _actions, context, deterministic)(rng, fileService) }
           .toArray
       //System.out.println("Here are the rules: " + ClassifierRule.toPrettyString(rulesActionSet.toList))
@@ -160,8 +173,8 @@ object Matching extends JavaLogger {
       outputs += varIterations,
 
       (inputs, outputs) += varSimulationCount,
-      (inputs, outputs) += DecodeEntities.varMin,
-      (inputs, outputs) += DecodeEntities.varMax
+      (inputs, outputs) += varMin,
+      (inputs, outputs) += varMax
     )
 
   }

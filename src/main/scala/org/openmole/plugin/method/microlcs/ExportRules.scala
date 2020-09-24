@@ -92,6 +92,7 @@ object ExportRules extends JavaLogger {
       outputs += varId,
       outputs += varCount,
       outputs += varIterationRule,
+      outputs += varIterations,
       outputs ++= microCharacteristics.map(c ⇒ Val[Array[String]](c.prototype.name, namespace = namespaceMicroLCS)),
       outputs ++= microActions.map(a ⇒ a.prototype.toArray),
       outputs ++= (microMinimize ++ microMaximize).map(t ⇒ t.toArray)

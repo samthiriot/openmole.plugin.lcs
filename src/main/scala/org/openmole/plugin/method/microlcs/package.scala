@@ -161,7 +161,7 @@ package object microlcs {
       (delete -- Slot(beginLoop) when "microlcs$iterations < " + iterations) &
         // last step: run exportation
       (delete -- export when "microlcs$iterations == " + iterations) &
-      (export -- Strain(last)) // when "microlcs$iterations == " + iterations
+      (export -- Strain(last) when "microlcs$iterations == " + iterations) 
     ) 
 
     /*

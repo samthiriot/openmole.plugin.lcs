@@ -154,14 +154,14 @@ package object microlcs {
 
     // TODO DSLContainer ??? To get hooks
     (
-      (decodeIndividuals -- beginLoop -- dispatch -< ( doMatching -- encodeIndividuals -- simulation -- evaluate ) >- aggregate -- subsume -- evolve -- delete) &
+      (decodeIndividuals -- Slot(beginLoop) -- dispatch -< ( doMatching -- encodeIndividuals -- simulation -- evaluate ) >- aggregate -- subsume -- evolve -- delete) &
       // convey rules, iteration, micro entities and other information over the evaluation
       (encodeIndividuals -- evaluate) &
       // loop
-      (delete -- beginLoop when "microlcs$iterations < " + iterations) &
+      (delete -- Slot(beginLoop) when "microlcs$iterations < " + iterations) &
         // last step: run exportation
       (delete -- export when "microlcs$iterations == " + iterations) &
-      (export -- Strain(last)) //  when "microlcs$iterations == " + iterations
+      (export -- Strain(last)) // when "microlcs$iterations == " + iterations
     ) 
 
     /*

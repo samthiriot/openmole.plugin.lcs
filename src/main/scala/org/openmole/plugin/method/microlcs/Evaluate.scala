@@ -52,7 +52,8 @@ object Evaluate extends JavaLogger {
 
       val entities = context(DecodeEntities.varEntities)
 
-      System.out.println("Iteration " + iteration + ": Evaluating the " + rulesUsed.length+" rules used during this simulation")
+      if (verbose)
+        System.out.println("Iteration " + iteration + ": Evaluating the " + rulesUsed.length+" rules used during this simulation")
 
       // update each rule with the corresponding information
       //val rulesUpdated: Array[ClassifierRule] =
@@ -61,7 +62,7 @@ object Evaluate extends JavaLogger {
           case (r, i) ⇒
 
             if (verbose)
-              System.out.println("on entity " + entities(i) + " rule " + r + " => " +
+              System.out.println("\ton entity " + entities(i) + " rule " + r + " => " +
                 (microIndicatorsToMinimize.map(vals ⇒ vals(i)) ++ microIndicatorsToMaximize.map(vals ⇒ -vals(i))).toList)
             
             r.addPerformance(

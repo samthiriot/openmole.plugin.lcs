@@ -9,26 +9,26 @@ val envMultithread = LocalEnvironment(4)
 val seed = Val[Int]
 
 // micro parameters
-val characteristicsHeight = Val[Array[Int]]
-val characteristicsHeatNet = Val[Array[Boolean]]
+val height = Val[Array[Int]]
+val heatnet = Val[Array[Boolean]]
 
-val micro1: MicroCharacteristic = characteristicsHeight
-val micro2: MicroCharacteristic = characteristicsHeatNet
+val micro1: MicroCharacteristic = height
+val micro2: MicroCharacteristic = heatnet
 
 val test1: MicroCharacteristics = Seq(micro1,micro2) 
 
 //val characteristicHeight = Val[Int]
 //val characteristicDHN = Val[Boolean]
 
-val microIndicatorEnergyProduction = Val[Double]
-val microIndicatorCost = Val[Double]
-val microIndicatorCostEfficiency = Val[Double] 
+val production = Val[Double]
+val cost = Val[Double]
+val efficiency = Val[Double] 
 
 val macroIndicatorEnergyProduction = Val[Double]
 val macroIndicatorCost = Val[Double]
 val macroIndicatorCostEfficiency = Val[Double]
 
-val actionInstallPV = Val[Boolean]
+val installpv = Val[Boolean]
 
 /*
 val actionInstallBattery = Val[Int]
@@ -37,12 +37,11 @@ val actionInstallReno = Val[Double]
 
 // generates the characteristics of the entities
 val generatePopulation = ScalaTask(
-    """val characteristicsHeight = Array(7,10,5,7,3,6,5,8,4,7,5,7,7,7,7,5,7,8,7,5,4,8,5,4,7,6,3,5,4,4,8,8,4,5,6,8,8,6,7,5,4,7,4,6,6,4,6,7,4,5,8,9,7,4,7,5,5,4,7,4,5,6,7,7,6,3,8,5,5,7,5,4,5,4,4,7,10,6,6,10,6,5,6,3,5,6,5,6,3,8,7,4,4,5,7,6,6,9,6,3,4,6,7,5,6,8,5,7,5,3,4,5,7,10,5,4,3,3,5,4,7,4,8,4,5,8,4,9,8,8,6,7,6,4,7,6,3,11,9,9,5,7,4,3,8,5,4,4,8,5,7,6,5,6,9,7,9,5,8,3,3,4,7,6,8,4,7,5,5,5,6,7,8,9,4,8,6,8,5,5,8,5,8,7,2,3,7,11,4,6,6,6,7,7,6,10,6,7,11,8,6,4,9,6,5,4,5,5,8,9,9,9,8,6,6,8,5,6,6,6,7,7,3,11,5,5,8,6,6,4,7,8,5,8,6,4,5,4,5,10,5,6,4,5,2,4,6,9,8,6,7,3,3,7,9,5,5,7,5,7,6,6,7,8,7,7,4,7,8,6,4,6,3,6,8,7,2,5,3,10,9,5,6,5,6,8,7,5,8,9,6,4,5,6,6,7,3,4,5,9,5,8,6,7,5,8,6,5,9,9,7,5,6,7,8,8,6,9,6,4,7,3,7,6,6,5,6,5,7,1,8,8,6,7,4,6,8,6,7,4,7,4,8,4,7,4,6,6,8,6,4,7,8,6,5,6,6,7,5,5,6,6,4,3,7,5,5,6,6,7,6,9,9,6,7,7,9,6,8,11,5,1,6,7,7,5,4,6,5,7,6,5,7,6,6,5,6,8,7,11,8,5,6,5,7,6,6,5,4,5,8,7,7,6,7,10,4,6,7,5,6,7,5,9,5,4,6,7,3,7,5,7,7,8,6,6,4,3,8,6,5,8,6,3,4,8,5,8,4,6,5,7,2,8,5,6,7,7,7,5,5,5,6,5,7,9,4,4,2,5,7,5,8,6,2,6,8,7,7,6,6,6,7,10,5,3,6,7,5,5,9,7,3,7,4,6,7,3,3,6,6,7,6,7,1,7,10,10,4,3,3,8,2,5,5,5,6,6,5,7,3,6,3,5,6,5,3,3,3,4,6,7,5,4,5,5,7,6,5,9,4,5,7,5,7,4,6,6,4,6,4,4,2,6,8,9,7,8,6,5,3,6,6,6,9,8,5,7,5,4,5,5,6,5,12,10,2,4,8,7,6,4,9,6,9,7,4,5,3,8,7,9,6,4,5,10,10,9,5,4,3,7,6,8,6,9,4,6,6,10,5,10,7,6,5,8,8,5,8,5,9,10,3,6,8,8,6,7,9,4,5,6,4,2,2,4,8,6,6,10,11,4,7,7,9,5,5,9)
-    //val characteristicsHeatNet = Array(1,0,1,1,1,0,1,1,1,0,0,0,1,1,1,0,0,1,0,0,1,0,1,1,0,1,0,0,1,1,0,0,1,1,0,1,1,1,1,1,0,1,1,1,0,0,0,0,1,1,0,1,0,0,1,0,0,1,0,0,0,1,1,0,0,1,1,1,1,0,1,0,0,1,1,1,1,0,1,0,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1,0,1,1,0,1,1,1,1,0,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0,1,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,1,1,1,0,0,1,1,0,1,0,0,1,1,0,1,1,1,0,0,1,1,0,0,1,0,0,1,1,1,1,1,1,0,1,0,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,1,1,1,1,1,0,0,0,1,0,0,0,1,0,1,1,0,0,1,0,0,1,0,0,1,1,0,0,1,0,1,0,0,1,1,1,1,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1,1,1,1,0,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1,0,1,1,0,1,1,0,1,1,1,0,0,0,1,1,0,1,0,0,0,0,1,0,1,1,0,1,0,0,1,0,1,0,1,1,1,0,0,1,0,1,1,0,1,1,0,1,0,0,1,1,1,0,1,0,0,1,1,1,1,0,1,1,0,0,1,0,0,1,1,0,1,1,0,0,1,0,0,0,1,1,0,1,0,1,0,0,1,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,0,1,0,0,0,1,0,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,0,1,1,1,0,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,1,0,1,0,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,0,0,1,1,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0,1,1,1,0,1,1,0,1,1,1,0,0,1,0,1,1,0,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1,0,0,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,0,0,0,1,0,1,1,1,1,1,1,0,1,1,0,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,0,1,0,0,1,1,1,0,1,0,0,0,1,0,0,1,1,1,1,0,1,0,0,1,0,0,0,0,1,0,1)
-    val characteristicsHeatNet = Array(true,false,true,true,true,false,true,true,true,false,false,false,true,true,true,false,false,true,false,false,true,false,true,true,false,true,false,false,true,true,false,false,true,true,false,true,true,true,true,true,false,true,true,true,false,false,false,false,true,true,false,true,false,false,true,false,false,true,false,false,false,true,true,false,false,true,true,true,true,false,true,false,false,true,true,true,true,false,true,false,true,false,false,false,false,false,false,false,true,true,false,false,false,true,true,false,true,true,false,true,true,true,true,false,true,true,false,false,true,false,false,false,false,false,false,true,true,true,false,true,false,false,false,false,true,true,true,false,false,false,true,false,true,false,false,true,false,false,true,true,false,true,false,true,false,true,true,true,true,false,false,true,true,false,true,false,false,true,true,false,true,true,true,false,false,true,true,false,false,true,false,false,true,true,true,true,true,true,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,true,true,false,true,true,true,true,true,false,false,false,true,false,false,false,true,false,true,true,false,false,true,false,false,true,false,false,true,true,false,false,true,false,true,false,false,true,true,true,true,false,false,true,true,false,false,false,false,false,true,true,false,false,false,true,true,true,true,false,false,true,true,true,false,true,false,true,true,true,true,true,false,true,false,true,true,false,true,false,true,true,false,true,true,false,true,true,true,false,false,false,true,true,false,true,false,false,false,false,true,false,true,true,false,true,false,false,true,false,true,false,true,true,true,false,false,true,false,true,true,false,true,true,false,true,false,false,true,true,true,false,true,false,false,true,true,true,true,false,true,true,false,false,true,false,false,true,true,false,true,true,false,false,true,false,false,false,true,true,false,true,false,true,false,false,true,true,false,true,false,false,false,true,false,true,false,true,false,true,false,true,false,true,true,true,false,false,true,true,false,true,false,false,false,true,false,false,true,false,true,true,true,true,true,false,true,false,true,true,false,true,true,false,true,false,false,true,true,true,false,true,true,false,false,false,false,true,true,true,true,false,false,false,true,true,true,false,true,false,false,true,true,false,true,false,true,true,true,false,true,false,true,true,false,false,false,true,true,false,false,true,false,true,false,false,false,true,false,false,false,true,false,false,false,true,false,true,true,true,false,false,true,true,true,false,false,false,false,false,true,true,true,false,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,true,false,true,true,true,false,true,true,false,true,true,true,false,false,true,false,true,true,false,true,true,false,false,true,false,false,false,false,false,false,true,true,true,false,true,true,false,true,true,false,true,false,true,true,true,false,true,false,true,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,true,false,true,false,false,true,true,true,false,true,false,true,true,true,false,true,true,true,true,false,false,false,true,false,true,true,true,true,true,true,false,true,true,false,true,true,true,false,true,false,false,false,true,true,true,false,false,false,true,true,false,true,false,false,true,true,true,false,true,false,false,false,true,false,false,true,true,true,true,false,true,false,false,true,false,false,false,false,true,false,true)
+    """val height = Array(7,10,5,7,3,6,5,8,4,7,5,7,7,7,7,5,7,8,7,5,4,8,5,4,7,6,3,5,4,4,8,8,4,5,6,8,8,6,7,5,4,7,4,6,6,4,6,7,4,5,8,9,7,4,7,5,5,4,7,4,5,6,7,7,6,3,8,5,5,7,5,4,5,4,4,7,10,6,6,10,6,5,6,3,5,6,5,6,3,8,7,4,4,5,7,6,6,9,6,3,4,6,7,5,6,8,5,7,5,3,4,5,7,10,5,4,3,3,5,4,7,4,8,4,5,8,4,9,8,8,6,7,6,4,7,6,3,11,9,9,5,7,4,3,8,5,4,4,8,5,7,6,5,6,9,7,9,5,8,3,3,4,7,6,8,4,7,5,5,5,6,7,8,9,4,8,6,8,5,5,8,5,8,7,2,3,7,11,4,6,6,6,7,7,6,10,6,7,11,8,6,4,9,6,5,4,5,5,8,9,9,9,8,6,6,8,5,6,6,6,7,7,3,11,5,5,8,6,6,4,7,8,5,8,6,4,5,4,5,10,5,6,4,5,2,4,6,9,8,6,7,3,3,7,9,5,5,7,5,7,6,6,7,8,7,7,4,7,8,6,4,6,3,6,8,7,2,5,3,10,9,5,6,5,6,8,7,5,8,9,6,4,5,6,6,7,3,4,5,9,5,8,6,7,5,8,6,5,9,9,7,5,6,7,8,8,6,9,6,4,7,3,7,6,6,5,6,5,7,1,8,8,6,7,4,6,8,6,7,4,7,4,8,4,7,4,6,6,8,6,4,7,8,6,5,6,6,7,5,5,6,6,4,3,7,5,5,6,6,7,6,9,9,6,7,7,9,6,8,11,5,1,6,7,7,5,4,6,5,7,6,5,7,6,6,5,6,8,7,11,8,5,6,5,7,6,6,5,4,5,8,7,7,6,7,10,4,6,7,5,6,7,5,9,5,4,6,7,3,7,5,7,7,8,6,6,4,3,8,6,5,8,6,3,4,8,5,8,4,6,5,7,2,8,5,6,7,7,7,5,5,5,6,5,7,9,4,4,2,5,7,5,8,6,2,6,8,7,7,6,6,6,7,10,5,3,6,7,5,5,9,7,3,7,4,6,7,3,3,6,6,7,6,7,1,7,10,10,4,3,3,8,2,5,5,5,6,6,5,7,3,6,3,5,6,5,3,3,3,4,6,7,5,4,5,5,7,6,5,9,4,5,7,5,7,4,6,6,4,6,4,4,2,6,8,9,7,8,6,5,3,6,6,6,9,8,5,7,5,4,5,5,6,5,12,10,2,4,8,7,6,4,9,6,9,7,4,5,3,8,7,9,6,4,5,10,10,9,5,4,3,7,6,8,6,9,4,6,6,10,5,10,7,6,5,8,8,5,8,5,9,10,3,6,8,8,6,7,9,4,5,6,4,2,2,4,8,6,6,10,11,4,7,7,9,5,5,9)
+    val heatnet = Array(true,false,true,true,true,false,true,true,true,false,false,false,true,true,true,false,false,true,false,false,true,false,true,true,false,true,false,false,true,true,false,false,true,true,false,true,true,true,true,true,false,true,true,true,false,false,false,false,true,true,false,true,false,false,true,false,false,true,false,false,false,true,true,false,false,true,true,true,true,false,true,false,false,true,true,true,true,false,true,false,true,false,false,false,false,false,false,false,true,true,false,false,false,true,true,false,true,true,false,true,true,true,true,false,true,true,false,false,true,false,false,false,false,false,false,true,true,true,false,true,false,false,false,false,true,true,true,false,false,false,true,false,true,false,false,true,false,false,true,true,false,true,false,true,false,true,true,true,true,false,false,true,true,false,true,false,false,true,true,false,true,true,true,false,false,true,true,false,false,true,false,false,true,true,true,true,true,true,false,true,false,false,true,false,false,false,true,false,false,false,true,false,true,true,true,false,true,true,true,true,true,false,false,false,true,false,false,false,true,false,true,true,false,false,true,false,false,true,false,false,true,true,false,false,true,false,true,false,false,true,true,true,true,false,false,true,true,false,false,false,false,false,true,true,false,false,false,true,true,true,true,false,false,true,true,true,false,true,false,true,true,true,true,true,false,true,false,true,true,false,true,false,true,true,false,true,true,false,true,true,true,false,false,false,true,true,false,true,false,false,false,false,true,false,true,true,false,true,false,false,true,false,true,false,true,true,true,false,false,true,false,true,true,false,true,true,false,true,false,false,true,true,true,false,true,false,false,true,true,true,true,false,true,true,false,false,true,false,false,true,true,false,true,true,false,false,true,false,false,false,true,true,false,true,false,true,false,false,true,true,false,true,false,false,false,true,false,true,false,true,false,true,false,true,false,true,true,true,false,false,true,true,false,true,false,false,false,true,false,false,true,false,true,true,true,true,true,false,true,false,true,true,false,true,true,false,true,false,false,true,true,true,false,true,true,false,false,false,false,true,true,true,true,false,false,false,true,true,true,false,true,false,false,true,true,false,true,false,true,true,true,false,true,false,true,true,false,false,false,true,true,false,false,true,false,true,false,false,false,true,false,false,false,true,false,false,false,true,false,true,true,true,false,false,true,true,true,false,false,false,false,false,true,true,true,false,false,false,true,false,false,true,false,false,false,true,false,false,false,true,false,false,true,true,false,true,true,true,false,true,true,false,true,true,true,false,false,true,false,true,true,false,true,true,false,false,true,false,false,false,false,false,false,true,true,true,false,true,true,false,true,true,false,true,false,true,true,true,false,true,false,true,true,false,true,false,false,false,true,false,true,false,true,false,false,true,false,true,false,true,false,false,true,true,true,false,true,false,true,true,true,false,true,true,true,true,false,false,false,true,false,true,true,true,true,true,true,false,true,true,false,true,true,true,false,true,false,false,false,true,true,true,false,false,false,true,true,false,true,false,false,true,true,true,false,true,false,false,false,true,false,false,true,true,true,true,false,true,false,false,true,false,false,false,false,true,false,true)
     """
     ) set (
-  outputs += (characteristicsHeight, characteristicsHeatNet)
+  outputs += (height, heatnet)
 )
 
 val launch = List("setup-netlogo", "random-seed ${seed}", "simulate-day")
@@ -50,13 +49,13 @@ val launch = List("setup-netlogo", "random-seed ${seed}", "simulate-day")
 val modelExec = NetLogo6Task(workDirectory / "buildings_pc.nlogo", launch) set(
   inputs += (seed),
 
-  netLogoInputs += (characteristicsHeight,      "buildings-heights"),
-  netLogoInputs += (actionInstallPV.toArray,    "buildings-has-pv"),
-  netLogoInputs += (characteristicsHeatNet,     "buildings-connected-dhn"),
+  netLogoInputs += (height,      "buildings-heights"),
+  netLogoInputs += (installpv.toArray,    "buildings-has-pv"),
+  netLogoInputs += (heatnet,     "buildings-connected-dhn"),
 
-  netLogoOutputs += ("map [ [a] -> [elec-production-cumulated] of a ] sort buildings", microIndicatorEnergyProduction.toArray),
-  netLogoOutputs += ("map [ [a] -> [cost-cumulated] of a ] sort buildings", microIndicatorCost.toArray),
-  netLogoOutputs += ("map [ [a] -> [ elec-production-cumulated / (cost-cumulated + 1) ] of a ] sort buildings", microIndicatorCostEfficiency.toArray),
+  netLogoOutputs += ("map [ [a] -> [elec-production-cumulated] of a ] sort buildings", production.toArray),
+  netLogoOutputs += ("map [ [a] -> [cost-cumulated] of a ] sort buildings", cost.toArray),
+  netLogoOutputs += ("map [ [a] -> [ elec-production-cumulated / (cost-cumulated + 1) ] of a ] sort buildings", efficiency.toArray),
   
   netLogoOutputs += ("sum [elec-production-cumulated] of buildings", macroIndicatorEnergyProduction),
   netLogoOutputs += ("sum [cost-cumulated] of buildings", macroIndicatorCost),
@@ -71,12 +70,14 @@ val modelExec = NetLogo6Task(workDirectory / "buildings_pc.nlogo", launch) set(
   
 // MoleTask ?
 generatePopulation -- ( MicroLCS(
-        microCharacteristics = Seq(characteristicsHeight, characteristicsHeatNet),
-        microActions = Seq( actionInstallPV in Seq(true, false) ),
-        iterations = 50,
+        microCharacteristics = Seq(height, heatnet),
+        microActions = Seq( installpv in Seq(true, false) ),
+        iterations = 500,
+        count = 500,
+        parallelEval = 100,
         evaluation = modelExec on envMultithread,
-        microMinimize = Seq(microIndicatorCost),
-        microMaximize = Seq(microIndicatorEnergyProduction, microIndicatorCostEfficiency),
+        microMinimize = Seq(cost),
+        microMaximize = Seq(production, efficiency),
         verboseMatching = true,
         verboseEvaluation = false,
         verboseEvolution = true,

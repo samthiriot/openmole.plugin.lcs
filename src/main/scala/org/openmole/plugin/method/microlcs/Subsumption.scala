@@ -109,7 +109,7 @@ object Subsumption extends JavaLogger {
       val iteration = context(varIterations)
 
       if (verbose)
-        System.out.println("simplifying rules based on mins and maxs: " + mins.mkString(",") + " " + maxs.mkString(","))
+        System.out.println("\tsimplifying rules based on mins and maxs: " + mins.mkString(",") + " " + maxs.mkString(","))
 
       val rulesWithoutDoubles = rules.toSet
       val rulesSimplified = rulesWithoutDoubles.map(ClassifierRule.simplify(_, mins, maxs))
@@ -119,7 +119,7 @@ object Subsumption extends JavaLogger {
       val simulationsCount = context(varSimulationCount)
 
       if (verbose)
-        System.out.println("Applying subsumption on " + rulesShuffled.length + " unique rules " + rulesShuffled.map(_.name).mkString(","))
+        System.out.println("\tapplying subsumption on " + rulesShuffled.length + " unique rules " + rulesShuffled.map(_.name).mkString(","))
 
       val minPerIndicator: Array[Double] = (0 to microMinimize.length + microMaximize.length - 1).map(
         i ⇒ rulesShuffled.map(
@@ -133,7 +133,7 @@ object Subsumption extends JavaLogger {
       val epsilons = (minPerIndicator zip maxPerIndicator).map { case (min, max) ⇒ (max - min) / similarity.toDouble }
 
       if (verbose)
-        System.out.println("Using epsilons on performance to define whether two rules can be merged or not:\n" +
+        System.out.println("\tusing epsilons on performance to define whether two rules can be merged or not:\n" +
           (microMinimize ++ microMaximize).zipWithIndex
           .map { case (indic, i) ⇒ indic.simpleName + " [" + minPerIndicator(i) + ":" + maxPerIndicator(i) + "] => " + epsilons(i) }
           .mkString(",\n")
@@ -142,12 +142,12 @@ object Subsumption extends JavaLogger {
       val rulesUpdated = compareRules(epsilons, rulesShuffled.toList)
 
       if (verbose)
-        System.out.println("\nMicro iteration " + iteration + "/" + maxIteration + " - rules after subsumption (capitalizing " +
+        System.out.println("\tmicro iteration " + iteration + "/" + maxIteration + " - rules after subsumption (capitalizing " +
           rulesUpdated.map(r ⇒ r.applications).sum + " micro simulations - over " + simulationsCount + " ran total):\n" +
           ClassifierRule.toPrettyString(rulesUpdated)
         )
 
-      System.out.println("Subsumption reduced rules from " + rulesShuffled.length + " to " + rulesUpdated.length + " rules")
+      System.out.println("\tsubsumption reduced rules from " + rulesShuffled.length + " to " + rulesUpdated.length + " rules")
 
       List(
         Variable(varRules, rulesUpdated.toArray)

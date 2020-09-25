@@ -81,7 +81,7 @@ object Evolve extends JavaLogger {
 
       // TODO val tournamentSize =
 
-      Log.log(Log.FINE, "Iteration " + iteration + ": starting evolution of the " + rules.length + " rules...")
+      //Log.log(Log.FINE, "Iteration " + iteration + ": starting evolution of the " + rules.length + " rules...")
       System.out.println("Iteration " + iteration + ": starting evolution of the " + rules.length + " rules...")
 
       val mins: Array[Double] = context(varMin)
@@ -97,7 +97,7 @@ object Evolve extends JavaLogger {
           }
           .toArray
 
-      Log.log(Log.INFO, "Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
+      //Log.log(Log.INFO, "Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
       System.out.println("Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
       
       //if (verbose) 

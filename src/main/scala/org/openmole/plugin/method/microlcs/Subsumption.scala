@@ -90,7 +90,8 @@ object Subsumption extends JavaLogger {
     microMinimize: Seq[Val[Double]],
     microMaximize: Seq[Val[Double]],
     maxIteration:  Int,
-    similarity:    Int              = 100
+    similarity:    Int              = 100,
+    verbose:       Boolean          = false
   )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("Subsumption") { (context, rng, _) ⇒
@@ -99,12 +100,16 @@ object Subsumption extends JavaLogger {
       // ... the rules used for the exploration
       val rules: Array[ClassifierRule] = context(varRules)
 
-      //System.out.println("Applying subsumption on " + rules.length + " rules " + rules.map(_.name).mkString(","))
+      System.out.println("Applying subsumption on " + rules.length + " rules"
+      // + rules.map(_.name).mkString(",")
+      )
+      
       val mins = context(varMin)
       val maxs = context(varMax)
       val iteration = context(varIterations)
 
-      Log.log(Log.INFO, "simplifying rules based on mins and maxs: " + mins.mkString(",") + " " + maxs.mkString(","))
+      if (verbose)
+        System.out.println("simplifying rules based on mins and maxs: " + mins.mkString(",") + " " + maxs.mkString(","))
 
       val rulesWithoutDoubles = rules.toSet
       val rulesSimplified = rulesWithoutDoubles.map(ClassifierRule.simplify(_, mins, maxs))
@@ -113,7 +118,8 @@ object Subsumption extends JavaLogger {
 
       val simulationsCount = context(varSimulationCount)
 
-      Log.log(Log.FINER, "Applying subsumption on " + rulesShuffled.length + " unique rules " + rulesShuffled.map(_.name).mkString(","))
+      if (verbose)
+        System.out.println("Applying subsumption on " + rulesShuffled.length + " unique rules " + rulesShuffled.map(_.name).mkString(","))
 
       val minPerIndicator: Array[Double] = (0 to microMinimize.length + microMaximize.length - 1).map(
         i ⇒ rulesShuffled.map(
@@ -126,20 +132,22 @@ object Subsumption extends JavaLogger {
 
       val epsilons = (minPerIndicator zip maxPerIndicator).map { case (min, max) ⇒ (max - min) / similarity.toDouble }
 
-      Log.log(Log.INFO, "Using epsilons on performance to define whether two rules can be merged or not:\n" +
-        (microMinimize ++ microMaximize).zipWithIndex
-        .map { case (indic, i) ⇒ indic.simpleName + " [" + minPerIndicator(i) + ":" + maxPerIndicator(i) + "] => " + epsilons(i) }
-        .mkString(",\n")
-      )
+      if (verbose)
+        System.out.println("Using epsilons on performance to define whether two rules can be merged or not:\n" +
+          (microMinimize ++ microMaximize).zipWithIndex
+          .map { case (indic, i) ⇒ indic.simpleName + " [" + minPerIndicator(i) + ":" + maxPerIndicator(i) + "] => " + epsilons(i) }
+          .mkString(",\n")
+        )
 
       val rulesUpdated = compareRules(epsilons, rulesShuffled.toList)
 
-      val msg = "\nMicro iteration " + iteration + "/" + maxIteration + " - rules after subsumption (capitalizing " +
-        rulesUpdated.map(r ⇒ r.applications).sum + " micro simulations - over " + simulationsCount + " ran total):\n" +
-        ClassifierRule.toPrettyString(rulesUpdated)
-      Log.log(Log.INFO, msg)
+      if (verbose)
+        System.out.println("\nMicro iteration " + iteration + "/" + maxIteration + " - rules after subsumption (capitalizing " +
+          rulesUpdated.map(r ⇒ r.applications).sum + " micro simulations - over " + simulationsCount + " ran total):\n" +
+          ClassifierRule.toPrettyString(rulesUpdated)
+        )
 
-      Log.log(Log.INFO, "Subsumption reduced rules from " + rulesShuffled.length + " to " + rulesUpdated.length + " rules")
+      System.out.println("Subsumption reduced rules from " + rulesShuffled.length + " to " + rulesUpdated.length + " rules")
 
       List(
         Variable(varRules, rulesUpdated.toArray)

@@ -22,15 +22,14 @@ import org.openmole.core.context.{ Val, _ }
 import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
+import org.openmole.core.workflow.hook._
 import org.openmole.core.workflow.execution.EnvironmentProvider
 import org.openmole.core.workflow.mole._
 import org.openmole.core.workflow.task._
 import org.openmole.core.workflow.transition.TransitionSlot
+import org.openmole.core.workflow.format.{OutputFormat,WritableOutput}
 import org.openmole.tool.random.RandomProvider
 import org.openmole.core.workspace.TmpDirectory
-
-// TODO remove test
-import org.openmole.plugin.hook.display._
 
 package object microlcs {
 
@@ -87,6 +86,59 @@ package object microlcs {
 
   // TODO MacroLCS
 
+
+  /*
+
+  /**
+   * add hooks
+   */
+  object MicroLCSHook {
+
+    def apply[F](dsl: DSLContainer[microlcs.MicroLCSParams], output: WritableOutput, format: F = CSVOutputFormat())(implicit name: sourcecode.Name, definitionScope: DefinitionScope, outputFormat: OutputFormat[F, microlcs.MicroLCSParams]) =
+    Hook("MicroLCSHook") { p ⇒
+      import p._
+      import WritableOutput._
+
+      val inputs = Seq()//ScalarOrSequenceOfDouble.prototypes(dsl.data.inputs)
+
+      import OutputFormat._
+
+      val rules: Array[ClassifierRule] = context(varRules)
+      val rulesFiltered: Array[ClassifierRule] = rules.filter(r ⇒ (r.applications > 0))
+      
+
+      def sections =
+        Seq(
+          OutputSection("id", List(Variable(ExportRules.varId, rulesFiltered.map(r ⇒ r.name))))
+          //OutputSection("mu", Sensitivity.variableResults(inputs, dsl.data.outputs, Morris.mu(_, _)).from(context)),
+          //OutputSection("muStar", Sensitivity.variableResults(inputs, dsl.data.outputs, Morris.muStar(_, _)).from(context)),
+          //OutputSection("sigma", Sensitivity.variableResults(inputs, dsl.data.outputs, Morris.sigma(_, _)).from(context))
+        )
+
+      outputFormat.write(executionContext)(format, output, sections, dsl.data).from(context)
+
+      context
+    }
+
+  }
+
+  case class MicroLCSParams(
+    varId:                Val[Array[String]],
+    varCount:             Val[Array[Int]],
+    varIterationRule:     Val[Array[Int]],
+    varIterations:        Val[Int]
+  )
+  implicit class MicroLCSContainer(dsl: DSLContainer[microlcs.MicroLCSParams]) extends DSLContainerHook(dsl) {
+    def hook[T](
+      output: WritableOutput,
+      values: Seq[Val[_]]    = Vector.empty,
+      format: T              = CSVOutputFormat(append = true))(implicit outputFormat: OutputFormat[T, microlcs.MicroLCSParams]): DSLContainer[microlcs.MicroLCSParams] = {
+      implicit val defScope = dsl.scope
+      dsl hook MicroLCSHook(dsl, output, format)
+    }
+  }
+  */
+
   /**
    * Entry point for the method: applies MicroLCS
    * with a list of input characteristics for entities,
@@ -102,10 +154,15 @@ package object microlcs {
     microMaximize:        Seq[Val[Double]],
     count:                Int                     = 200,
     similarity:           Int                     = 100,
-    parallelEval:         Int                     = 4
+    parallelEval:         Int                     = 4,
+    verboseMatching:      Boolean                 = false,
+    verboseEvaluation:    Boolean                 = false,
+    verboseEvolution:     Boolean                 = false,
+    verboseSubsumption:   Boolean                 = false,
+    verboseDelete:        Boolean                 = false 
   //macroMinimize:        Seq[Val[Double]],
   //macroMaximize:        Seq[Val[Double]]
-  )(implicit definitionScope: DefinitionScope, tmpDirectory: TmpDirectory, fileService: FileService): DSL = {
+  )(implicit definitionScope: DefinitionScope, tmpDirectory: TmpDirectory, fileService: FileService) = {
 
     //
     // rng: RandomProvider,
@@ -115,17 +172,17 @@ package object microlcs {
     // the first step is to decode the initial lists of characteristics as lists of individuals.
     val decodeIndividuals = DecodeEntities(microCharacteristics, microActions)
 
-    val doMatching = Matching(microActions, false)
+    val doMatching = Matching(microActions, deterministic=false, verbose=verboseMatching)
 
     val encodeIndividuals = EncodeEntities(microCharacteristics, microActions)
 
-    val evaluate = Evaluate(microMinimize, microMaximize)
+    val evaluate = Evaluate(microMinimize, microMaximize, verbose=verboseEvaluation)
 ;
-    val subsume = Subsumption(microMinimize, microMaximize, iterations, similarity)
+    val subsume = Subsumption(microMinimize, microMaximize, iterations, similarity, verbose=verboseSubsumption)
 
-    val evolve = Evolve(microActions, microCharacteristics, count)
+    val evolve = Evolve(microActions, microCharacteristics, count, verbose=verboseEvolution)
 
-    val delete = Delete(count * 2)
+    val delete = Delete(count * 2, verbose=verboseDelete)
 
     val dispatch = ExplorationTask(DispatchEntities(parallelEval))
 
@@ -136,47 +193,28 @@ package object microlcs {
       inputs += (DecodeEntities.varEntities, varRules, varIterations, varMin, varMax, varSimulationCount),
       outputs += (DecodeEntities.varEntities, varRules, varIterations, varMin, varMax, varSimulationCount)
     )
-   // val sBeginLoop = Strain(beginLoop)
-
-    //val beginLoopCapsule = Strain(beginLoop)
-    //val beginLoopExecInit = TransitionSlot(beginLoopCapsule)
-    //val beginLoopExecLoop = TransitionSlot(beginLoopCapsule)
 
     val export = ExportRules(microCharacteristics, microActions, microMinimize, microMaximize)
-    //val exportSlot = TransitionSlot(export)
 
     val last = EmptyTask() set (
       name := "last" //,
     //(inputs, outputs) += (t.populationPrototype, t.statePrototype)
     )
-    //val lastCapsule = Strain(last)
- 
 
-    // TODO DSLContainer ??? To get hooks
-    (
-      (decodeIndividuals -- Slot(beginLoop) -- dispatch -< ( doMatching -- encodeIndividuals -- simulation -- evaluate ) >- aggregate -- subsume -- evolve -- delete) &
+    // encapsulate into a DSLContainer so we get standard hooks
+    DSLContainer(
+      (decodeIndividuals -- Slot(beginLoop) -- dispatch -< ( doMatching -- encodeIndividuals -- simulation -- evaluate ) >- aggregate -- subsume) &
       // convey rules, iteration, micro entities and other information over the evaluation
       (encodeIndividuals -- evaluate) &
+      // continue evaluation 
+      (subsume -- evolve when "microlcs$iterations < " + iterations) & (evolve -- delete) &
       // loop
-      (delete -- Slot(beginLoop) when "microlcs$iterations < " + iterations) &
+      (subsume -- Slot(beginLoop) when "microlcs$iterations < " + iterations ) &
         // last step: run exportation
-      (delete -- export when "microlcs$iterations == " + iterations) &
-      (export -- Strain(last) when "microlcs$iterations == " + iterations) 
-    ) 
-
-    /*
-    (
-      (decodeIndividuals -- beginLoopExecInit -- dispatch
-        -< (sDoMatching -- sEncodeIndividuals -- simulation -- sEvaluate) >-
-        aggregate -- subsume -- sEvolve -- sDelete) &
-        // convey rules, iteration, micro entities and other information over the evaluation
-        (sEncodeIndividuals -- sEvaluate) &
-        // loop
-        (sDelete -- (beginLoopExecLoop when "microlcs$iterations < " + iterations)) &
-        // last step: run exportation
-        (sDelete -- (exportSlot when "microlcs$iterations == " + iterations))
-    ) -- (lastCapsule when "microlcs$iterations == " + iterations)
-  */
+      (subsume -- export when "microlcs$iterations == " + iterations) &
+      // just to have a clear last task which will detected as such produce the right outputs
+      (export -- Strain(last)) //  when "microlcs$iterations == " + iterations
+    )
 
   }
 

@@ -36,10 +36,6 @@ libraryDependencies += "org.openmole" %% "org-openmole-core-workspace" % openmol
 libraryDependencies += "org.openmole" %% "org-openmole-tool-logger" % openmoleVersion % Provided
 libraryDependencies += "org.openmole" %% "org-openmole-tool-random" % openmoleVersion % Provided
 
-// TODO remove once tests are done 
-libraryDependencies += "org.openmole" %% "org-openmole-plugin-hook-display" % openmoleVersion % Provided
-
-
 OsgiKeys.embeddedJars := Seq()
 OsgiKeys.explodedJars := Seq()
 

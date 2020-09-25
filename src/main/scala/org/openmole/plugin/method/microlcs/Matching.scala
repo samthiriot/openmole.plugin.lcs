@@ -55,7 +55,8 @@ object Matching extends JavaLogger {
     context:          Context,
     deterministic:    Boolean,
     entitiesCovered:  List[Entity],
-    rulesForEntities: List[ClassifierRule]
+    rulesForEntities: List[ClassifierRule],
+    verbose:      Boolean = false 
   )(implicit rng: RandomProvider, tmpDirectory: TmpDirectory, fileService: FileService): Array[ClassifierRule] = entitiesToCover match {
     case Nil ⇒ rulesForEntities.toArray
     case e :: tail ⇒
@@ -63,13 +64,17 @@ object Matching extends JavaLogger {
       val (r, createdRule) = {
         if (matching.length == 1) {
           // only one rule is matching; let's use this one
+          if (verbose) System.out.println("matching\n "+e+" with the only available rule\n "+matching(0))
           (matching(0), false)
         }
         else if (matching.isEmpty) {
           // no rule is matching; let's run the covering mechanism
-          (covering(e, _actions, context), true)
+          val newrule = covering(e, _actions, context)
+          if (verbose) System.out.println("covering\n "+e+" with new rule\n "+newrule)
+          (newrule, true)
         }
         else if (deterministic) {
+          if (verbose) System.out.println("matching\n "+e+"\n with one of the "+matching.length+" rules")
           // there are several rules, which have to be processed deterministically;
           // let's pick the first one matching
           // note we take the proportion into account
@@ -85,6 +90,7 @@ object Matching extends JavaLogger {
 
           // bias the selection:
           // we prefer to select rules which were not tested a lot
+          if (verbose) System.out.println("matching\n "+e+"\n randomly with one of the "+matching.length+" rules")
           val weights = matching.map(r ⇒ 100 - math.log(1 + r.applications))
           (weightedWheel(matching, weights)(rng), false)
         }
@@ -104,7 +110,8 @@ object Matching extends JavaLogger {
 
   def apply(
     _actions:      Seq[MicroGenes.Gene[_]],
-    deterministic: Boolean
+    deterministic: Boolean,
+    verbose:      Boolean = true 
   )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, tmpDirectory:TmpDirectory, fileService: FileService) = {
 
     ClosureTask("Matching") { (context, rng, _) ⇒
@@ -131,16 +138,15 @@ object Matching extends JavaLogger {
         case false ⇒ rng().shuffle(rules.toList).toArray
       }
 
-      /*
       System.out.println(
         "Iteration " + iteration +
-          " matching on " + entities.length + " entities " +
-          "based on " + rules.length + " rules: " + rulesShuffled.map(_.name).mkString(","))
-      */
+          " matching " + entities.length + " entities " +
+          "based on " + rules.length + " rules "// + rulesShuffled.map(_.name).mkString(",")
+      )
 
       // create the set of actions to be used
       val rulesActionSet: Array[ClassifierRule] =
-        matchOrCoverEntities(rulesShuffled, entities.toList, _actions, context, deterministic, List(), List())(rng, tmpDirectory, fileService)
+        matchOrCoverEntities(rulesShuffled, entities.toList, _actions, context, deterministic, List(), List(), verbose)(rng, tmpDirectory, fileService)
           //entities.map { e ⇒ matchOrCoverIndividual(rulesShuffled, e, _actions, context, deterministic)(rng, fileService) }
           .toArray
       //System.out.println("Here are the rules: " + ClassifierRule.toPrettyString(rulesActionSet.toList))

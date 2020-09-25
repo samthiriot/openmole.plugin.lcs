@@ -67,7 +67,8 @@ object Evolve extends JavaLogger {
   def apply(
     microActions:         Seq[MicroGenes.Gene[_]],
     microCharacteristics: MicroCharacteristics,
-    rulesCount:           Int
+    rulesCount:           Int,
+    verbose:              Boolean = false
   )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, tmpDirectory:TmpDirectory, fileService: FileService) = {
 
     ClosureTask("Evolve") { (context, rng, _) ⇒
@@ -81,6 +82,7 @@ object Evolve extends JavaLogger {
       // TODO val tournamentSize =
 
       Log.log(Log.FINE, "Iteration " + iteration + ": starting evolution of the " + rules.length + " rules...")
+      System.out.println("Iteration " + iteration + ": starting evolution of the " + rules.length + " rules...")
 
       val mins: Array[Double] = context(varMin)
       val maxs: Array[Double] = context(varMax)
@@ -96,7 +98,11 @@ object Evolve extends JavaLogger {
           .toArray
 
       Log.log(Log.INFO, "Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
-      //System.out.println(ClassifierRule.toPrettyString(rulesUpdated.toList))
+      System.out.println("Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
+      
+      //if (verbose) 
+      //  System.out.println(ClassifierRule.toPrettyString(rulesUpdated.toList))
+      
       List(
         Variable(varRules, rules ++ rulesUpdated)
       )

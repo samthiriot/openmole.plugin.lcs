@@ -32,7 +32,8 @@ object Evaluate extends JavaLogger {
 
   def apply(
     microMinimize: Seq[Val[Double]],
-    microMaximize: Seq[Val[Double]]
+    microMaximize: Seq[Val[Double]],
+    verbose:       Boolean = false
   )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
     ClosureTask("Evaluate") { (context, rng, _) ⇒
@@ -51,18 +52,18 @@ object Evaluate extends JavaLogger {
 
       val entities = context(DecodeEntities.varEntities)
 
-      //System.out.println("Iteration " + iteration + ": Evaluating the " + rulesUsed.length+" rules used during this simulation")
+      System.out.println("Iteration " + iteration + ": Evaluating the " + rulesUsed.length+" rules used during this simulation")
 
       // update each rule with the corresponding information
       //val rulesUpdated: Array[ClassifierRule] =
       rulesUsed.zipWithIndex
         .foreach {
           case (r, i) ⇒
-            /*if (i <= 20) {
+
+            if (verbose)
               System.out.println("on entity " + entities(i) + " rule " + r + " => " +
                 (microIndicatorsToMinimize.map(vals ⇒ vals(i)) ++ microIndicatorsToMaximize.map(vals ⇒ -vals(i))).toList)
-            }*/
-
+            
             r.addPerformance(
               microIndicatorsToMinimize.map(vals ⇒ vals(i)) ++
                 microIndicatorsToMaximize.map(vals ⇒ -vals(i))

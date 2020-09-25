@@ -30,10 +30,12 @@ import org.openmole.tool.logger.JavaLogger
 object Delete extends JavaLogger {
 
   def apply(
-    maxrules: Int
+    maxrules:   Int,
+    verbose:    Boolean = false
   )(implicit name: sourcecode.Name, definitionScope: DefinitionScope, fileService: FileService) = {
 
-    ClosureTask("Evaluate") { (context, rng, _) ⇒
+    ClosureTask("Delete") { (context, rng, _) ⇒
+
 
       // retrieve the inputs
       // ... the current iteration
@@ -52,14 +54,17 @@ object Delete extends JavaLogger {
 
       val rulesRankedPareto = HasMultiObjectivePerformance.detectParetoFronts(rulesTested)
 
-      //System.out.println("\n\n" + HasMultiObjectivePerformance.paretoFrontsToPrettyString(rulesRankedPareto.take(3)))
+      System.out.println("Iteration " + iteration + ": starting delete on " + rules.length + " rules...")
+
+      //if (verbose)  
+      //  System.out.println("\n" + HasMultiObjectivePerformance.paretoFrontsToPrettyString(rulesRankedPareto.take(1)))
 
       // select n parents; they will be taken from the first front, then next, then next, etc...
       val keptTested = HasMultiObjectivePerformance.selectParentsFromFronts(rulesTestedToKeep, rulesRankedPareto.toList)(rng).toArray
       val keptNonTested = rng().shuffle(rulesNonTested.toList).take(rulesNonTestedToKeep.max(maxrules - keptTested.length))
       val kept = keptTested ++ keptNonTested
 
-      Log.log(Log.FINE, "there are " + rules.length + " rules, " +
+      System.out.println("there are " + rules.length + " rules, " +
         "we can only keep a max of " + maxrules + "; " +
         "we kept " + keptNonTested.length + " novel rules over " + kept.length + " rules")
 

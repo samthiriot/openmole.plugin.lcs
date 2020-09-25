@@ -58,6 +58,8 @@ object ExportRules extends JavaLogger {
       // remove the rules with no experience
       val rulesFiltered: Array[ClassifierRule] = rules.filter(r ⇒ (r.applications > 0))
 
+      System.out.println("Exportation: over the "+rules.length+" we kept "+rulesFiltered.length+" rules")
+
       Log.log(Log.FINER, "preparing " + rulesFiltered.length + " rules for exportation")
 
       List(

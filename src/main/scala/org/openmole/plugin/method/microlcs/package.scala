@@ -38,7 +38,7 @@ package object microlcs {
   // this value will contain the set of rules
   val varRules = Val[Array[ClassifierRule]]("rules", namespace = namespaceMicroLCS)
   // refers to a list of rules applied on a simultion, each rule corresponding one entity
-  val varRulesApplied = Val[Array[ClassifierRule]]("rules", namespace = namespaceMicroLCS)
+  val varRulesApplied = Val[Array[ClassifierRule]]("rulesapplied", namespace = namespaceMicroLCS)
 
   val varIterations = Val[Int]("iterations", namespace = namespaceMicroLCS)
 
@@ -158,58 +158,38 @@ package object microlcs {
     verboseMatching:      Boolean                 = false,
     verboseEvaluation:    Boolean                 = false,
     verboseEvolution:     Boolean                 = false,
-    verboseSubsumption:   Boolean                 = false,
+    verboseSubsumption:   Boolean                 = true,
     verboseDelete:        Boolean                 = false 
   //macroMinimize:        Seq[Val[Double]],
   //macroMaximize:        Seq[Val[Double]]
   )(implicit definitionScope: DefinitionScope, tmpDirectory: TmpDirectory, fileService: FileService) = {
 
-    //
-    // rng: RandomProvider,
-
-    val simulation = evaluation // Capsule(MoleTask(evaluation))
-
-    // the first step is to decode the initial lists of characteristics as lists of individuals.
     val decodeIndividuals = DecodeEntities(microCharacteristics, microActions)
-
     val doMatching = Matching(microActions, deterministic=false, verbose=verboseMatching)
-
     val encodeIndividuals = EncodeEntities(microCharacteristics, microActions)
-
+    val simulation = evaluation 
     val evaluate = Evaluate(microMinimize, microMaximize, verbose=verboseEvaluation)
-;
     val subsume = Subsumption(microMinimize, microMaximize, iterations, similarity, verbose=verboseSubsumption)
-
     val evolve = Evolve(microActions, microCharacteristics, count, verbose=verboseEvolution)
-
     val delete = Delete(count * 2, verbose=verboseDelete)
-
     val dispatch = ExplorationTask(DispatchEntities(parallelEval))
-
     val aggregate = AggregateResults()
-
     val beginLoop = EmptyTask() set (
       name := "beginLoop",
       inputs += (DecodeEntities.varEntities, varRules, varIterations, varMin, varMax, varSimulationCount),
       outputs += (DecodeEntities.varEntities, varRules, varIterations, varMin, varMax, varSimulationCount)
     )
-
     val export = ExportRules(microCharacteristics, microActions, microMinimize, microMaximize)
+    val last = EmptyTask() set ( name := "last" )
 
-    val last = EmptyTask() set (
-      name := "last" //,
-    //(inputs, outputs) += (t.populationPrototype, t.statePrototype)
-    )
-
-    // encapsulate into a DSLContainer so we get standard hooks
-    DSLContainer(
+    DSLContainer( // encapsulate into a DSLContainer so we get standard hooks
       (decodeIndividuals -- Slot(beginLoop) -- dispatch -< ( doMatching -- encodeIndividuals -- simulation -- evaluate ) >- aggregate -- subsume) &
       // convey rules, iteration, micro entities and other information over the evaluation
       (encodeIndividuals -- evaluate) &
       // continue evaluation 
-      (subsume -- evolve when "microlcs$iterations < " + iterations) & (evolve -- delete) &
+      (subsume -- evolve when "microlcs$iterations < " + iterations) &
       // loop
-      (subsume -- Slot(beginLoop) when "microlcs$iterations < " + iterations ) &
+      (evolve -- delete -- Slot(beginLoop) ) &
         // last step: run exportation
       (subsume -- export when "microlcs$iterations == " + iterations) &
       // just to have a clear last task which will detected as such produce the right outputs

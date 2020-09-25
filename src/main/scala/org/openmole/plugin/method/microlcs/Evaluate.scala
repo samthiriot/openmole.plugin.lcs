@@ -44,7 +44,7 @@ object Evaluate extends JavaLogger {
 
       // ... the rules used for the exploration
       val rulesUsed: Array[ClassifierRule] = context(varRulesApplied)
-      val rulesUnused: Array[ClassifierRule] = context(varRulesApplied)
+      val rulesUnused: Array[ClassifierRule] = context(varRules)
 
       // ... the indicators for each entity
       val microIndicatorsToMinimize: Seq[Array[Double]] = microMinimize.map(v ⇒ context(v.toArray))
@@ -61,17 +61,20 @@ object Evaluate extends JavaLogger {
         .foreach {
           case (r, i) ⇒
 
-            if (verbose)
-              System.out.println("\ton entity " + entities(i) + " rule " + r + " => " +
-                (microIndicatorsToMinimize.map(vals ⇒ vals(i)) ++ microIndicatorsToMaximize.map(vals ⇒ -vals(i))).toList)
-            
             r.addPerformance(
               microIndicatorsToMinimize.map(vals ⇒ vals(i)) ++
                 microIndicatorsToMaximize.map(vals ⇒ -vals(i))
             )
-        }
 
-      // System.out.println("Rules after evaluation: " + ClassifierRule.toPrettyString(rulesUsed.toList))
+            if (verbose)
+              System.out.println("\ton entity " + entities(i) + " rule " + r + " => " +
+                (microIndicatorsToMinimize.map(vals ⇒ vals(i)) ++ microIndicatorsToMaximize.map(vals ⇒ -vals(i))).toList)
+            
+      }
+
+      //Log.log(Log.INFO, "\tafter evaluation we have used rules "+rulesUsed.toSet.toArray.map(r => r.name).mkString(",")+
+      //                  "and unused rules "+rulesUnused.toSet.toArray.map(r => r.name).mkString(",") )
+      //System.out.println("Rules after evaluation: " + ClassifierRule.toPrettyString(rulesUsed.toList))
       List(
         Variable(varRules, (rulesUsed ++ rulesUnused).toSet.toArray),
         Variable(varIterations, iteration + 1)

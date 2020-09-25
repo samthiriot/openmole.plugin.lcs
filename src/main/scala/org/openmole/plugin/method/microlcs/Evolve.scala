@@ -100,9 +100,13 @@ object Evolve extends JavaLogger {
       //Log.log(Log.INFO, "Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
       System.out.println("Generated " + rulesUpdated.length + " novel rules => we now have " + (rulesUpdated.length + rules.length) + " rules total")
       
-      //if (verbose) 
-      //  System.out.println(ClassifierRule.toPrettyString(rulesUpdated.toList))
-      
+      if (verbose) {
+        val msg = "Iteration "+iteration+": after evolution, we created the following "+(rulesUpdated.length)+"new rules:"+
+                  ClassifierRule.toPrettyString(rulesUpdated.toList)
+        System.out.println(msg)
+        Log.log(Log.INFO, msg)
+      }
+
       List(
         Variable(varRules, rules ++ rulesUpdated)
       )

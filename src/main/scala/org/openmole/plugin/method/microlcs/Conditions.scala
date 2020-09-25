@@ -326,7 +326,7 @@ object Condition {
     case GreaterThanIntCondition(a, v) if v == minVal ⇒ (WildCardIntCondition(a), true)
     case GreaterThanFloatCondition(a, v) if v == minVal ⇒ (WildCardFloatCondition(a), true)
 
-    // x >= 100 with x in [1:100] => x = 100
+    // x >= 100 with x in [...:100] => x = 100
     case GreaterThanIntCondition(a, v) if v == maxVal ⇒ (EqualToIntCondition(a, v), true)
     case GreaterThanFloatCondition(a, v) if v == maxVal ⇒ (EqualToFloatCondition(a, v), true)
 

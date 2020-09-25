@@ -37,22 +37,32 @@ object Subsumption extends JavaLogger {
       //System.out.println("finished processing " + r + " and returning " + acc.length + " rules")
       (r, acc)
     case r2 :: tail ⇒
+      //Log.log(Log.INFO, "\tabsorbSubsumed: r:"+r.name+" rules:"+rules.map(_.name).mkString(",")+" acc:"+acc.map(_.name).mkString(","))
+
       //System.out.println("comparing rules(" + tail.length + " remaining):\n\t" + r + "\n\t" + r2)
 
       if (r eq r2) {
-        //System.out.println("its the same !")
+        // they are the same! 
+        // let's ignore r2 
+        Log.log(Log.INFO, "\tsame rules: keeping "+r.name+" and forgeting "+r2.name)
         absorbSubsumed(r, epsilons, tail, acc)
       }
       else if ((r.sameActions(r2)) && (r.sameConditions(r2) || (r.subsums(r2) && r.similarPerformance(r2, epsilons)))) {
         //System.out.println("comparing rules(" + tail.length + " remaining):\n\t" + r + "\n\t" + r2)
         //System.out.println("=> subsuming or the same")
         // absorb r2 into r
-        //System.out.println("absorb r2 into 2...")
-        r.absorb(r2)
-        // continue, but do not consider the absorbed rule anymore
-        //System.out.println("continuing recursively to process the " + tail.length + " remaining elements (" + acc.length + " accumulated)")
-        absorbSubsumed(r, epsilons, tail, acc)
 
+        if (r.id < r2.id) {
+          //Log.log(Log.INFO, "\tabsorbing "+r2.name+" into "+r.name)
+          // continue, but do not consider the absorbed rule anymore
+          //System.out.println("continuing recursively to process the " + tail.length + " remaining elements (" + acc.length + " accumulated)")
+          absorbSubsumed(r.absorb(r2), epsilons, tail, acc)
+        } else {
+          //Log.log(Log.INFO, "\tabsorbing "+r.name+" into "+r2.name)
+          // continue, but do not consider the absorbed rule anymore
+          //System.out.println("continuing recursively to process the " + tail.length + " remaining elements (" + acc.length + " accumulated)")
+          absorbSubsumed(r2.absorb(r), epsilons, tail, acc)
+        }
       }
       else {
         //System.out.println("continuing")
@@ -100,52 +110,63 @@ object Subsumption extends JavaLogger {
       // ... the rules used for the exploration
       val rules: Array[ClassifierRule] = context(varRules)
 
-      System.out.println("Applying subsumption on " + rules.length + " rules"
-      // + rules.map(_.name).mkString(",")
-      )
+      System.out.println("Applying subsumption on " + rules.length + " rules")
       
       val mins = context(varMin)
       val maxs = context(varMax)
       val iteration = context(varIterations)
 
-      if (verbose)
-        System.out.println("\tsimplifying rules based on mins and maxs: " + mins.mkString(",") + " " + maxs.mkString(","))
-
+      if (verbose) {
+        System.out.println("\tsimplifying rules based on mins "+mins.mkString(",")+" and maxs: "+ maxs.mkString(","))
+      }
+    
       val rulesWithoutDoubles = rules.toSet
       val rulesSimplified = rulesWithoutDoubles.map(ClassifierRule.simplify(_, mins, maxs))
-      val rulesShuffled = rulesSimplified.toList.sortBy(_.id).toArray
+      val rulesShuffled = rulesSimplified.toList.sortBy(_.id).toArray // sort by ID so we keep a preference, when two rules are equivalent, for the older ones
       //rng().shuffle(rulesWithoutDoubles.toList).toArray
+
+      //if (verbose)
+      //  System.out.println("\tall the rules\n" + ClassifierRule.toPrettyString(rules.toList))
 
       val simulationsCount = context(varSimulationCount)
 
-      if (verbose)
-        System.out.println("\tapplying subsumption on " + rulesShuffled.length + " unique rules " + rulesShuffled.map(_.name).mkString(","))
+      if (verbose) {
+        val msg = "\tapplying subsumption on " + rulesShuffled.length + " unique rules " + rulesShuffled.map(_.name).mkString(",")
+        System.out.println(msg)
+        Log.log(Log.INFO, msg)
+      }
 
+      val rulesShuffledUsed = rulesShuffled.filter(r => r.applications > 0)
       val minPerIndicator: Array[Double] = (0 to microMinimize.length + microMaximize.length - 1).map(
-        i ⇒ rulesShuffled.map(
+        i ⇒ rulesShuffledUsed.map(
           r ⇒ r.min(i)
         ).min).toArray
       val maxPerIndicator: Array[Double] = (0 to microMinimize.length + microMaximize.length - 1).map(
-        i ⇒ rulesShuffled.map(
+        i ⇒ rulesShuffledUsed.map(
           r ⇒ r.max(i)
         ).max).toArray
 
       val epsilons = (minPerIndicator zip maxPerIndicator).map { case (min, max) ⇒ (max - min) / similarity.toDouble }
 
-      if (verbose)
-        System.out.println("\tusing epsilons on performance to define whether two rules can be merged or not:\n" +
+      if (verbose) {
+        val msg = "\tusing epsilons on performance to define whether two rules can be merged or not:\n" +
           (microMinimize ++ microMaximize).zipWithIndex
-          .map { case (indic, i) ⇒ indic.simpleName + " [" + minPerIndicator(i) + ":" + maxPerIndicator(i) + "] => " + epsilons(i) }
+          .map { case (indic, i) ⇒ "\t"+indic.simpleName + " [" + minPerIndicator(i) + ":" + maxPerIndicator(i) + "] => epsilon=" + epsilons(i) }
           .mkString(",\n")
-        )
+        Log.log(Log.INFO,msg)
+        System.out.println(msg)
+      }
 
       val rulesUpdated = compareRules(epsilons, rulesShuffled.toList)
 
-      if (verbose)
-        System.out.println("\tmicro iteration " + iteration + "/" + maxIteration + " - rules after subsumption (capitalizing " +
+      if (verbose) {
+        val msg = "\tmicro iteration " + iteration + "/" + maxIteration + " - rules after subsumption (capitalizing " +
           rulesUpdated.map(r ⇒ r.applications).sum + " micro simulations - over " + simulationsCount + " ran total):\n" +
           ClassifierRule.toPrettyString(rulesUpdated)
-        )
+        System.out.println(msg)
+        Log.log(Log.INFO, msg)
+
+      }
 
       System.out.println("\tsubsumption reduced rules from " + rulesShuffled.length + " to " + rulesUpdated.length + " rules")
 

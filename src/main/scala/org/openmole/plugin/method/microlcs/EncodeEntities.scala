@@ -21,8 +21,9 @@ import org.openmole.core.fileservice.FileService
 import org.openmole.core.workflow.builder.DefinitionScope
 import org.openmole.core.workflow.dsl._
 import org.openmole.core.workflow.task.ClosureTask
+import org.openmole.tool.logger.JavaLogger
 
-object EncodeEntities {
+object EncodeEntities extends JavaLogger {
 
   // ugly.
   // but seriously, spending hours for manipulating generics is enough.
@@ -45,6 +46,10 @@ object EncodeEntities {
       val entities: Array[Entity] = context(DecodeEntities.varEntities)
 
       // debug:
+      val rulesAll: Array[ClassifierRule] = context(varRules)
+
+      //Log.log(Log.INFO, "encoding: all rules: "+rulesAll.toArray.map(r => r.name).mkString(",") )
+
       //System.out.println("encoding " + entities.length + " entities into " + (_characteristics.length + _actions.length) + " arrays...")
 
       // forge as many outputs as expected
@@ -100,9 +105,6 @@ object EncodeEntities {
       (inputs, outputs) += varMin,
       (inputs, outputs) += varMax,
       (inputs, outputs) += varSimulationCount
-
-    //outputs += varRules,
-    //outputs += varIterations
 
     )
 

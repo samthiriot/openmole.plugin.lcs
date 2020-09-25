@@ -88,20 +88,21 @@ trait HasMultiObjectivePerformance {
     else "(" + applications + ") [" + means.map(v ⇒ v.toString).mkString(",") + "]"
   }
 
-  def absorb[T <: HasMultiObjectivePerformance](other: T): T = {
+  def absorb[T <: HasMultiObjectivePerformance](other: T): T = (this.applications, other.applications) match {
+    case (_,0) => this.asInstanceOf[T]
+    case (0,_) => other.asInstanceOf[T]
+    case (_,_) => { // integrate the performance of the other
+              //performance = performance.zipWithIndex.map { case (p, i) ⇒ p ++ other.performance(i) }
 
-    // integrate the performance of the other
-    //performance = performance.zipWithIndex.map { case (p, i) ⇒ p ++ other.performance(i) }
+              // update the means
+              means = means.zipWithIndex.map { case (m1, i) ⇒ (m1 * applications + other.performanceAggregated(i) * other.applications) / (applications + other.applications) }
+              min = min.zipWithIndex.map { case (m, i) ⇒ math.min(m, other.min(i)) }
+              max = max.zipWithIndex.map { case (m, i) ⇒ math.max(m, other.max(i)) }
 
-    // update the means
-    means = means.zipWithIndex.map { case (m1, i) ⇒ (m1 * applications + other.performanceAggregated(i) * other.applications) / (applications + other.applications) }
-    min = min.zipWithIndex.map { case (m, i) ⇒ math.min(m, other.min(i)) }
-    max = max.zipWithIndex.map { case (m, i) ⇒ math.max(m, other.max(i)) }
+              applications = applications + other.applications
 
-    applications = applications + other.applications
-
-    this.asInstanceOf[T]
-
+              this.asInstanceOf[T]
+            }
   }
 
 }

@@ -77,7 +77,7 @@ sealed class DispatchEntities(
 
     //System.out.println("dispatching " + rules.length + " rules: " + rules.map(r ⇒ r.name).mkString(","))
 
-    (0 to parallelCount).map(_ ⇒ List( 
+    (1 to parallelCount).map(_ ⇒ List( 
           Variable(varIterations, iteration),
           Variable(DecodeEntities.varEntities, entities),
           Variable(varRules, rules),

@@ -30,5 +30,5 @@ case class Entity(
   characteristics: Array[Variable[_]],
   actions:         Array[Variable[_]]
 ) {
-  override def toString: String = "Entity " + id + " [" + characteristics.mkString(",") + "] [" + actions.mkString(",") +"]"
+  override def toString: String = "Entity " + id + " [" + characteristics.mkString(",") + ";" + actions.mkString(",") +"]"
 }

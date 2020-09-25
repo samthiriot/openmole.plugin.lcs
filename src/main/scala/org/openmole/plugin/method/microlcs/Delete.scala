@@ -64,7 +64,7 @@ object Delete extends JavaLogger {
       val keptNonTested = rng().shuffle(rulesNonTested.toList).take(rulesNonTestedToKeep.max(maxrules - keptTested.length))
       val kept = keptTested ++ keptNonTested
 
-      System.out.println("there are " + rules.length + " rules, " +
+      System.out.println("\tthere are " + rules.length + " rules, " +
         "we can only keep a max of " + maxrules + "; " +
         "we kept " + keptNonTested.length + " novel rules over " + kept.length + " rules")
 

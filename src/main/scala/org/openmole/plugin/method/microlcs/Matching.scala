@@ -40,7 +40,7 @@ object Matching extends JavaLogger {
     }
     else {
       val r :: tail = matching
-      if (r.proportion == 1.0 || rng().nextDouble() <= r.proportion) {
+      if (r.proportion == 1.0 || rng().nextDouble() <= r.proportion) { // TODO this seems f*cking wrong!!!
         r
       }
       else
@@ -64,13 +64,21 @@ object Matching extends JavaLogger {
       val (r, createdRule) = {
         if (matching.length == 1) {
           // only one rule is matching; let's use this one
-          if (verbose) System.out.println("\tmatching "+e+" with the only available rule: "+matching(0))
+          if (verbose) {
+            val msg = "\tmatching "+e+" with the only available rule: "+matching(0)
+            Log.log(Log.INFO, msg)
+            System.out.println(msg)
+          }
           (matching(0), false)
         }
         else if (matching.isEmpty) {
           // no rule is matching; let's run the covering mechanism
           val newrule = covering(e, _actions, context)
-          if (verbose) System.out.println("\tcovering "+e+" with new rule: "+newrule)
+          if (verbose) {
+            val msg = "\tcovering "+e+" with new rule: "+newrule
+            Log.log(Log.INFO, msg)
+            System.out.println(msg)
+          }
           (newrule, true)
         }
         else if (deterministic) {
@@ -78,7 +86,11 @@ object Matching extends JavaLogger {
           // let's pick the first one matching
           // note we take the proportion into account
           val rule = applyOneRuleDeterministic(matching.toList)
-          if (verbose) System.out.println("\tmatching "+e+" with one of the "+matching.length+" rules: "+rule)
+          if (verbose) {
+            val msg = "\tmatching "+e+" with one of the "+matching.length+" matching rules: "+rule
+            Log.log(Log.INFO, msg)
+            System.out.println(msg)
+          }
           (rule, false)
         }
         else {
@@ -91,9 +103,17 @@ object Matching extends JavaLogger {
 
           // bias the selection:
           // we prefer to select rules which were not tested a lot
-          val weights = matching.map(r ⇒ 100 - math.log(1 + r.applications))
+          val maxou = matching.map(r ⇒ r.applications).max.toDouble
+          val weights = matching.map(r ⇒ maxou/r.applications)
+            //matching.map(r ⇒ 100 / math.log(1 + r.applications))
           val rule = weightedWheel(matching, weights)(rng)
-          if (verbose) System.out.println("\tmatching "+e+" randomly with one of the "+matching.length+" rules: "+rule)
+          if (verbose) { 
+            val msg = "\tmatching "+e+" randomly with one of the "+matching.length+" matching rules: "+rule //+"\n"+
+                // debug the proportional weights
+                //+"\n"+(matching zip weights).map({ case (rule, w) => "runs:"+rule.applications+"=>"+w }).mkString("\n")
+            System.out.println(msg)
+            Log.log(Log.INFO, msg)
+          }
           (rule, false)
         }
       }
@@ -118,16 +138,16 @@ object Matching extends JavaLogger {
 
     ClosureTask("Matching") { (context, rng, _) ⇒
 
-
       //Log.log(Log.INFO, "matching ! Context: " + context)
-
       val iteration: Int = context(varIterations)
       val entities: Array[Entity] = context(DecodeEntities.varEntities)
       val rules: Array[ClassifierRule] = context(varRules)
 
-      Log.log(Log.INFO, "Matching: Iteration " + iteration +
-          " entities " + entities + 
-          " rules " + rules)
+      /*
+      Log.log(Log.INFO, "Iteration " + iteration +
+          " matching " + entities.length + " entities " +
+          "based on " + rules.length + " rules ")
+      */
 
       // debug:
       /* 
@@ -141,12 +161,14 @@ object Matching extends JavaLogger {
         case false ⇒ rng().shuffle(rules.toList).toArray
       }
 
-      System.out.println(
-        "Iteration " + iteration +
-          " matching " + entities.length + " entities " +
-          "based on " + rules.length + " rules "// + rulesShuffled.map(_.name).mkString(",")
-      )
-
+      if (verbose) {
+        System.out.println(
+          "Iteration " + iteration +
+            " matching " + entities.length + " entities " +
+            "based on " + rules.length + " rules "// + 
+        )
+        Log.log(Log.INFO, "Matching on iteration "+iteration+" with the "+rules.length+" rules: "+rulesShuffled.map(r => r.name).mkString(","))
+      }
       // create the set of actions to be used
       val rulesActionSet: Array[ClassifierRule] =
         matchOrCoverEntities(rulesShuffled, entities.toList, _actions, context, deterministic, List(), List(), verbose)(rng, tmpDirectory, fileService)
